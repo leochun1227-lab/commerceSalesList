@@ -63,7 +63,8 @@ DEFAULT_CONFIG = {
     "state_dir": "state",
     "output_dir": "output",
     "threads": 12,
-    "retry_failed_config_per_run": 300,
+    "config_threads": 20,
+    "retry_failed_config_per_run": 100,
     "keep_runs": 60,
     "keep_excel": 14,
     "excel_config_sheet": True,
@@ -307,6 +308,30 @@ def compact_config(r):
     return {"productCode": r.get("productCode"), "groups": groups}
 
 
+def fb_config(cfg):
+    """Firebase keys may not contain . $ # [ ] / (e.g. the option "H.W.S."), so option names are stored as values:
+    {"productCode": ..., "groups": [{"g": group, "c": [[option, value], ...]}, ...]}"""
+    if not cfg:
+        return None
+    return {"productCode": cfg.get("productCode"),
+            "groups": [{"g": g, "c": [[ch, val] for ch, val in chars.items()]} for g, chars in cfg["groups"].items()]}
+
+
+BAD_KEY = re.compile(r"[.$#\[\]/\x00-\x1f\x7f]")
+
+
+def check_keys(obj, path=""):
+    """Raise before sending anything Firebase would reject, naming the offending key."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if not isinstance(k, str) or k == "" or BAD_KEY.search(k) or len(k.encode()) > 768:
+                raise RuntimeError(f"invalid Firebase key {k!r} at {path or '/'}")
+            check_keys(v, f"{path}/{k}")
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            check_keys(v, f"{path}/{i}")
+
+
 def index_row(v, has_cfg, product_code):
     """Compact list row. Order of fields is fixed and documented in INDEX_FIELDS (also used by the web page)."""
     return [v["chassis"], v["so"], v["po"], v["soStatus"], v["poStatus"], 1 if v["active"] else 0,
@@ -436,6 +461,11 @@ class Firebase:
 
     def patch_many(self, updates, chunk_bytes=4_000_000):
         """Multi-path update, split into requests of a few MB."""
+        for k, v in updates.items():
+            for part in k.split("/"):
+                if not part or BAD_KEY.search(part):
+                    raise RuntimeError(f"invalid Firebase path {k!r}")
+            check_keys(v, k)
         batch, size = {}, 0
         for k, v in updates.items():
             s = len(json.dumps(v, ensure_ascii=False, default=str))
@@ -556,7 +586,7 @@ def export_local(out_dir, snapshot, meta, stats, runs_changes):
     for k, s in snapshot.items():
         w(site / "vehicles" / f"{k}.json", s["vehicle"])
         if s.get("cfg"):
-            w(site / "config" / f"{k}.json", s["cfg"])
+            w(site / "config" / f"{k}.json", fb_config(s["cfg"]))
     log("local mirror written to", site)
 
 
@@ -686,7 +716,7 @@ def main():
             if done[0] % 250 == 0:
                 log(f"  configs {done[0]}/{len(todo)}")
 
-    with ThreadPoolExecutor(cfg["threads"]) as ex:
+    with ThreadPoolExecutor(cfg["config_threads"]) as ex:
         list(ex.map(fetch, todo))
     log(f"configs fetched: {sum(1 for r in new_cfg.values() if r['cfg'])}/{len(todo)} ok, SAP calls {sap.calls}")
 
@@ -743,16 +773,34 @@ def main():
     # 5. Firebase ------------------------------------------------------------------------------------------
     push_firebase = cfg["firebase_enabled"] and not args.dry_run and not args.no_firebase and not args.users
     fb_pushed_all = old_meta.get("firebasePushedAll", False)
+
+    def save_snapshot(pushed_all):
+        meta["firebasePushedAll"] = pushed_all
+        if fb_state:
+            n = fb_state.save_state({"meta": meta, "vehicles": snapshot})
+            log(f"snapshot saved to Firebase ({n / 1e6:.1f} MB)")
+        else:
+            tmp = snap_path.with_suffix(".tmp")
+            with gzip.open(tmp, "wt", encoding="utf-8") as f:
+                json.dump({"meta": meta, "vehicles": snapshot}, f, ensure_ascii=False)
+            os.replace(tmp, snap_path)
+            log("snapshot saved")
+
+    can_save = not args.dry_run and not args.users and (push_firebase or not fb_state)
+    full_push = push_firebase and (args.push_all or not fb_pushed_all)
+    if can_save and full_push:
+        # keep the downloaded configurations even if the large first push fails; the next run then only re-pushes
+        save_snapshot(False)
     if push_firebase:
         fb = Firebase(cfg)
-        full = args.push_all or not fb_pushed_all
+        full = full_push
         upd = {}
         targets = snapshot.keys() if full else [k for k, c in changes.items() if c["t"] != "del"]
         for k in targets:
             s = snapshot[k]
             upd[f"index/{k}"] = s["idx"]
             upd[f"vehicles/{k}"] = s["vehicle"]
-            upd[f"config/{k}"] = s.get("cfg")
+            upd[f"config/{k}"] = fb_config(s.get("cfg"))
         for k, c in changes.items():
             if c["t"] == "del":
                 upd[f"index/{k}"] = None
@@ -791,20 +839,10 @@ def main():
     if args.export_local:
         export_local(out_dir, snapshot, meta, stats, runs_changes)
 
-    if not args.dry_run and not args.users:
-        meta["firebasePushedAll"] = fb_pushed_all
-        if fb_state:
-            if push_firebase:
-                n = fb_state.save_state({"meta": meta, "vehicles": snapshot})
-                log(f"snapshot saved to Firebase ({n / 1e6:.1f} MB)")
-            else:
-                log("snapshot NOT saved (Firebase writing is off for this run)")
-        else:
-            tmp = snap_path.with_suffix(".tmp")
-            with gzip.open(tmp, "wt", encoding="utf-8") as f:
-                json.dump({"meta": meta, "vehicles": snapshot}, f, ensure_ascii=False)
-            os.replace(tmp, snap_path)
-            log("snapshot saved")
+    if can_save:
+        save_snapshot(fb_pushed_all)
+    elif fb_state and not args.dry_run:
+        log("snapshot NOT saved (Firebase writing is off for this run)")
     log(f"finished in {int(time.time() - t0)} s")
     return 0
 

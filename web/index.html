@@ -436,6 +436,8 @@ async function openVehicle(key) {
     ["经销商", esc(v.dealer)], ["州", esc(v.state || "—")], ["客户", esc(v.customer || "—")],
     ["首张销售单", fmtDT(v.firstPlaced) + (v.firstDealer && v.firstDealer !== v.dealer ? ` · ${esc(v.firstDealer)}` : "")], ["最后更新", fmtDT(v.updated)], ["车型编码", esc((cfg && cfg.productCode) || "—")],
     ["销售单金额", fmtM(v.soTotal) || "—"], ["采购单金额", fmtM(v.poTotal) || "—"], ["单据类型", esc(v.docType || "—")]];
+  // config groups: [{g, c:[[option, value], ...]}] (Firebase-safe) or the older {group: {option: value}}
+  const GROUPS = cfg && cfg.groups ? (Array.isArray(cfg.groups) ? cfg.groups.map(x => [x.g, x.c || []]) : Object.entries(cfg.groups).map(([g, o]) => [g, Object.entries(o)])) : null;
   const cfgFrom = (v.orders || []).find(o => o.type === "SO" && o.status !== "CANCELLED") || (v.orders || [])[0];
   let html = `<div class="kv">${kv.map(([l, x]) => `<div><label>${l}</label><span>${x}</span></div>`).join("")}</div>
     <div class="links"><a class="${v.floorPlan ? "" : "off"}" href="${esc(v.floorPlan || "#")}" target="_blank" rel="noopener">Floor plan ↗</a>
@@ -446,19 +448,19 @@ async function openVehicle(key) {
       <td>${o.status === "CANCELLED" ? '<span class="pill p-cx">已取消</span>' : o.status === "COMPLETED" ? '<span class="pill p-in">已完成</span>' : '<span class="pill p-ok">已创建</span>'}</td>
       <td>${fmtDT(o.placed)}</td><td class="ell" title="${esc(o.acct)}">${esc(o.acct)}</td><td class="ell" title="${esc(o.dealer)}">${esc(o.dealer || "")}</td><td class="num">${fmtM(o.total)}</td><td class="mono">${esc(o.erp || "")}</td></tr>`).join("")}
     </tbody></table></div>`;
-  if (cfg && cfg.groups) {
-    const n = Object.values(cfg.groups).reduce((s, g) => s + Object.keys(g).length, 0);
+  if (GROUPS) {
+    const n = GROUPS.reduce((s, [, c]) => s + c.length, 0);
     html += `<div class="sec">CPQ 配置 <span class="pill p-gr">${n} 项</span><input class="in" id="cfgq" placeholder="筛选配置…" style="margin-left:auto;height:28px;width:200px"></div><div id="cfgbox"></div>`;
   } else {
     html += `<div class="sec">CPQ 配置</div><div class="empty">SAP 没有返回这台车的配置</div>`;
   }
   $("#db").innerHTML = html;
-  if (cfg && cfg.groups) {
+  if (GROUPS) {
     const draw = q => {
       q = (q || "").toLowerCase();
       const hl = s => { s = esc(s); if (!q) return s; const i = s.toLowerCase().indexOf(q); return i < 0 ? s : s.slice(0, i) + "<mark>" + s.slice(i, i + q.length) + "</mark>" + s.slice(i + q.length); };
-      $("#cfgbox").innerHTML = Object.entries(cfg.groups).map(([g, chars]) => {
-        const items = Object.entries(chars).filter(([c, val]) => !q || (c + " " + val).toLowerCase().includes(q));
+      $("#cfgbox").innerHTML = GROUPS.map(([g, chars]) => {
+        const items = chars.filter(([c, val]) => !q || (c + " " + val).toLowerCase().includes(q));
         return items.length ? `<details class="cfg-g" open><summary><span>${esc(g)}</span><span style="color:var(--muted);font-weight:400">${items.length}</span></summary><table><tbody>${items.map(([c, val]) => `<tr style="cursor:default"><td>${hl(c)}</td><td>${hl(val)}</td></tr>`).join("")}</tbody></table></details>` : "";
       }).join("") || `<div class="empty">没有匹配的配置项</div>`;
     };
