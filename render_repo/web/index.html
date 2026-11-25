@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commerce 订单与配置</title>
+<style>
+:root{
+  --bg:#f7f7f8;--panel:#fff;--line:#e6e6ea;--line2:#f0f0f3;--text:#111827;--muted:#6b7280;--faint:#9ca3af;
+  --indigo:#4f46e5;--indigo-50:#eef2ff;--emerald:#059669;--emerald-50:#ecfdf5;--amber:#d97706;--amber-50:#fffbeb;
+  --red:#dc2626;--red-50:#fef2f2;--radius:10px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,"PingFang SC","Microsoft YaHei",sans-serif}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--indigo);text-decoration:none}
+a:hover{text-decoration:underline}
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1440px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:24px;height:52px}
+.brand{font-weight:650;letter-spacing:-.01em;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand i{width:8px;height:8px;border-radius:2px;background:var(--indigo);display:inline-block}
+.tabs{display:flex;gap:2px;height:100%}
+.tab{border:0;background:none;padding:0 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;height:100%}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--text);border-bottom-color:var(--indigo);font-weight:600}
+.sync{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap;display:flex;gap:8px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);display:inline-block}
+.dot.warn{background:var(--amber)}.dot.err{background:var(--red)}
+main{max-width:1440px;margin:0 auto;padding:20px}
+.view{display:none}.view.on{display:block}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.card h3{margin:0 0 10px;font-size:12px;font-weight:600;color:var(--muted);text-transform:none;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kpi .v{font-size:28px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .s{color:var(--muted);font-size:12px;margin-top:4px}
+.kpi .l{color:var(--muted);font-size:12px;margin-bottom:6px}
+.two{grid-template-columns:2fr 1fr}
+.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.bars{display:flex;align-items:flex-end;gap:4px;height:180px;padding-top:8px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;cursor:default}
+.bar b{display:block;width:100%;background:var(--indigo);border-radius:3px 3px 0 0;min-height:1px;opacity:.9}
+.bar:hover b{opacity:1;background:#4338ca}
+.bar span{font-size:10px;color:var(--faint);margin-top:4px;white-space:nowrap}
+.bar em{font-style:normal;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:2px}
+.hlist{display:flex;flex-direction:column;gap:6px}
+.hrow{display:grid;grid-template-columns:minmax(0,1fr) 120px 44px;gap:8px;align-items:center;cursor:pointer;padding:2px 0}
+.hrow:hover .hn{color:var(--indigo)}
+.hn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htrack{height:6px;background:var(--line2);border-radius:3px;overflow:hidden}
+.htrack b{display:block;height:100%;background:var(--indigo);border-radius:3px}
+.hv{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:3px 9px;cursor:pointer;color:var(--muted);font-size:12px}
+.seg button.on{background:var(--indigo-50);color:var(--indigo);font-weight:600}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.in{height:32px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 10px;outline:none}
+.in:focus{border-color:var(--indigo);box-shadow:0 0 0 3px var(--indigo-50)}
+.search{width:280px}
+select.in{max-width:220px}
+.db .ell{max-width:150px}
+.btn{height:32px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:0 12px;cursor:pointer}
+.btn:hover{border-color:#cfcfd6}
+.btn.pri{background:var(--indigo);border-color:var(--indigo);color:#fff}
+.count{color:var(--muted);margin-left:auto;white-space:nowrap}
+.tbl-wrap{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:auto}
+table{border-collapse:collapse;width:100%}
+th,td{padding:7px 10px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line2)}
+th{position:sticky;top:0;background:#fafafb;font-weight:600;color:var(--muted);font-size:12px;cursor:pointer;user-select:none;z-index:1}
+th:hover{color:var(--text)}
+th .ar{color:var(--indigo);margin-left:3px}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#fafaff}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.mono{font-family:var(--mono);font-size:12px}
+.ell{max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:600;line-height:18px}
+.p-ok{background:var(--emerald-50);color:var(--emerald)}
+.p-cx{background:var(--red-50);color:var(--red)}
+.p-am{background:var(--amber-50);color:var(--amber)}
+.p-in{background:var(--indigo-50);color:var(--indigo)}
+.p-gr{background:#f3f4f6;color:var(--muted)}
+.flags span{display:inline-block;width:18px;text-align:center;color:var(--line);font-weight:700;font-size:11px}
+.flags span.y{color:var(--indigo)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:10px 0}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+/* drawer */
+.shade{position:fixed;inset:0;background:rgba(17,24,39,.25);z-index:40;display:none}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(760px,96vw);background:#fff;z-index:41;transform:translateX(100%);transition:transform .18s ease;display:flex;flex-direction:column;border-left:1px solid var(--line)}
+.drawer.on{transform:none}.shade.on{display:block}
+.dh{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start}
+.dh h2{margin:0;font-size:20px;letter-spacing:-.01em;font-family:var(--mono)}
+.dh .sub{color:var(--muted);margin-top:2px}
+.dx{margin-left:auto;border:0;background:none;font-size:20px;cursor:pointer;color:var(--muted)}
+.db{padding:16px 20px;overflow:auto;flex:1}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 16px;margin-bottom:16px}
+.kv div{min-width:0}.kv label{display:block;color:var(--muted);font-size:11px}
+.kv>div>span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.links{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.links a{border:1px solid var(--line);border-radius:7px;padding:5px 10px;color:var(--text)}
+.links a:hover{border-color:var(--indigo);color:var(--indigo);text-decoration:none}
+.links a.off{pointer-events:none;color:var(--faint);background:#fafafa}
+.sec{font-weight:650;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+.cfg-g{border:1px solid var(--line);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.cfg-g summary{padding:8px 12px;cursor:pointer;background:#fafafb;font-weight:600;display:flex;justify-content:space-between}
+.cfg-g table td{white-space:normal}
+.cfg-g td:first-child{color:var(--muted);width:42%}
+mark{background:#fef08a;padding:0 1px;border-radius:2px}
+/* config analysis */
+.ca{display:grid;grid-template-columns:320px minmax(0,1fr);gap:14px;align-items:start}
+.clist{max-height:calc(100vh - 190px);overflow:auto;padding:6px}
+.cgrp{font-size:11px;color:var(--faint);font-weight:600;padding:10px 8px 4px;text-transform:uppercase;letter-spacing:.03em}
+.citem{padding:5px 8px;border-radius:6px;cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.citem:hover{background:var(--line2)}
+.citem.on{background:var(--indigo-50);color:var(--indigo);font-weight:600}
+.citem small{color:var(--faint);font-variant-numeric:tabular-nums}
+.vrow{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,2fr) 70px 54px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line2)}
+.vrow .htrack{height:8px}
+/* changes */
+.run{margin-bottom:12px}
+.run summary{cursor:pointer;display:flex;gap:10px;align-items:center;padding:10px 14px}
+.run[open] summary{border-bottom:1px solid var(--line)}
+.err-box{background:var(--red-50);color:#991b1b;border:1px solid #fecaca;border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;display:none}
+.loading{color:var(--muted);padding:30px;text-align:center}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.two,.three,.ca{grid-template-columns:1fr}.search{width:100%}}
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <div class="brand"><i></i>Commerce 订单与配置</div>
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-v="overview">总览</button>
+    <button class="tab" data-v="orders">订单</button>
+    <button class="tab" data-v="cfg">配置分析</button>
+    <button class="tab" data-v="changes">变更记录</button>
+  </nav>
+  <div class="sync" id="sync"><span class="dot warn"></span>加载中…</div>
+</div></div>
+
+<main>
+  <div class="err-box" id="err"></div>
+
+  <!-- overview -->
+  <section class="view on" id="v-overview">
+    <div class="grid kpis" id="kpis"></div>
+    <div class="grid two" style="margin-top:14px">
+      <div class="card">
+        <h3><span>每月新车（按首张销售单月份，不含已全部取消的车）</span>
+          <span class="seg" id="monthsSeg"><button data-n="12">12 个月</button><button data-n="24" class="on">24 个月</button><button data-n="0">全部</button></span></h3>
+        <div class="bars" id="monthBars"></div>
+      </div>
+      <div class="card"><h3><span>按州</span><span id="stateYear" class="seg"></span></h3><div class="hlist" id="byState"></div></div>
+    </div>
+    <div class="grid three" style="margin-top:14px">
+      <div class="card"><h3><span>经销商排名</span><span class="seg yearSeg" data-t="dealer"></span></h3><div class="hlist" id="byDealer"></div></div>
+      <div class="card"><h3><span>车型排名</span><span class="seg yearSeg" data-t="model"></span></h3><div class="hlist" id="byModel"></div></div>
+      <div class="card"><h3><span>最近一次同步的变化</span><a href="#" id="toChanges">全部 →</a></h3><div id="lastChanges"></div></div>
+    </div>
+  </section>
+
+  <!-- orders -->
+  <section class="view" id="v-orders">
+    <div class="filters">
+      <input class="in search" id="q" placeholder="搜车架号 / 销售单 / 采购单 / ERP / 客户…">
+      <select class="in" id="fDealer"><option value="">全部经销商</option></select>
+      <select class="in" id="fState"><option value="">全部州</option></select>
+      <select class="in" id="fModel"><option value="">全部车型</option></select>
+      <select class="in" id="fStatus">
+        <option value="active">在用（未全部取消）</option><option value="">全部</option><option value="cancelled">已全部取消</option>
+      </select>
+      <select class="in" id="fFlag">
+        <option value="">全部</option><option value="realloc">经历过调拨</option><option value="nocfg">没有配置</option><option value="noplan">没有 floor plan</option>
+      </select>
+      <input class="in" type="date" id="fFrom" title="首张销售单 从"><input class="in" type="date" id="fTo" title="首张销售单 到">
+      <button class="btn" id="reset">清空</button>
+      <button class="btn" id="csv">导出 CSV</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="tbl-wrap" style="max-height:calc(100vh - 210px)"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    <div class="pager" id="pager"></div>
+  </section>
+
+  <!-- config analysis -->
+  <section class="view" id="v-cfg">
+    <div class="ca">
+      <div class="card" style="padding:8px">
+        <input class="in" id="cq" placeholder="搜配置项…" style="width:100%;margin-bottom:4px">
+        <div class="clist" id="clist"><div class="loading">加载中…</div></div>
+      </div>
+      <div class="card" id="cpanel"><div class="loading">选择左边的配置项</div></div>
+    </div>
+  </section>
+
+  <!-- changes -->
+  <section class="view" id="v-changes"><div id="runs"><div class="loading">加载中…</div></div></section>
+</main>
+
+<div class="shade" id="shade"></div>
+<aside class="drawer" id="drawer"><div class="dh" id="dh"></div><div class="db" id="db"></div></aside>
+
+<script>
+/* ======================== settings ========================
+   source "firebase": reads <firebaseURL>/<root>/...json (REST)
+   source "local":    reads <localBase>/...json (the folder written by commerce_sync.py --export-local)
+   Override in the address bar:  ?source=local  or  ?source=firebase                                  */
+const SETTINGS = {
+  source: "firebase",
+  firebaseURL: "https://saleslistforplanning-default-rtdb.asia-southeast1.firebasedatabase.app",
+  root: "commerce",
+  localBase: "output/site",
+  pageSize: 100,
+};
+/* ========================================================== */
+const qs = new URLSearchParams(location.search);
+const SRC = qs.get("source") || SETTINGS.source;
+const $ = s => document.querySelector(s);
+const esc = s => s == null ? "" : String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtN = n => n == null ? "" : Number(n).toLocaleString("en-AU");
+const fmtM = n => n == null ? "" : "$" + Number(n).toLocaleString("en-AU", {maximumFractionDigits: 0});
+const parseD = s => s ? new Date(String(s).replace(/([+-]\d\d)(\d\d)$/, "$1:$2")) : null;
+const fmtD = s => { const d = parseD(s); return d && !isNaN(d) ? d.toLocaleDateString("en-CA") : ""; };
+const fmtDT = s => { const d = parseD(s); return d && !isNaN(d) ? d.toLocaleDateString("en-CA") + " " + d.toTimeString().slice(0,5) : ""; };
+const ym = s => { const d = parseD(s); return d && !isNaN(d) ? d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") : null; };
+
+function url(path, query) {
+  if (SRC === "local") return `${SETTINGS.localBase}/${path}.json`;
+  return `${SETTINGS.firebaseURL}/${SETTINGS.root}/${path}.json` + (query ? "?" + query : "");
+}
+const cache = {};
+async function get(path, query) {
+  const k = path + "|" + (query || "");
+  if (!cache[k]) cache[k] = fetch(url(path, query)).then(r => {
+    if (!r.ok) throw new Error(`${r.status} ${r.statusText} — ${path}`);
+    return r.json();
+  }).catch(e => { delete cache[k]; throw e; });
+  return cache[k];
+}
+function showErr(msg) { const b = $("#err"); b.style.display = "block"; b.innerHTML = msg; }
+
+/* ---------------- state ---------------- */
+let META = null, ROWS = [], FIELDS = [];
+const view = { sort: "firstPlaced", dir: -1, page: 0, filtered: [] };
+
+async function boot() {
+  try {
+    META = await get("meta");
+    if (!META) throw new Error("meta 为空");
+    FIELDS = META.indexFields;
+    const idx = await get("index");
+    ROWS = Object.entries(idx || {}).map(([key, a]) => { const o = {key}; FIELDS.forEach((f, i) => o[f] = a[i] ?? null); o._fy = ym(o.firstPlaced); return o; });
+  } catch (e) {
+    $("#sync").innerHTML = `<span class="dot err"></span>读取失败`;
+    showErr(`<b>读不到数据：</b>${esc(e.message)}<br>数据源：${esc(SRC === "local" ? SETTINGS.localBase : SETTINGS.firebaseURL + "/" + SETTINGS.root)}<br>
+      如果 Firebase 还没有数据，在 planning 电脑上把 commerce_sync_config.json 里的 firebase_enabled 改成 true 并运行一次 commerce_sync.py；
+      如果返回 401/403，是 Firebase 数据库规则不允许读取。`);
+    return;
+  }
+  const last = parseD(META.lastRun);
+  const hrs = (Date.now() - last) / 36e5;
+  $("#sync").innerHTML = `<span class="dot ${hrs > 30 ? "warn" : ""}"></span>同步于 ${fmtDT(META.lastRun)} · ${fmtN(META.vehicles)} 台`;
+  fillFilters(); renderOverview(); applyFilters();
+}
+
+/* ---------------- tabs ---------------- */
+function go(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.v === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  if (v === "cfg") loadCfgStats();
+  if (v === "changes") loadChanges();
+  history.replaceState(null, "", "#" + v);
+}
+$("#tabs").onclick = e => { if (e.target.dataset.v) go(e.target.dataset.v); };
+
+/* ---------------- overview ---------------- */
+let monthsN = 24, yearSel = String(new Date().getFullYear());
+function countBy(rows, f) { const m = new Map(); rows.forEach(r => { const k = f(r); if (k != null && k !== "") m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]); }
+function hlist(el, entries, onClick, max = 10) {
+  const top = entries.slice(0, max), mx = top.length ? top[0][1] : 1;
+  el.innerHTML = top.length ? top.map(([k, n]) => `<div class="hrow" data-k="${esc(k)}"><span class="hn" title="${esc(k)}">${esc(k)}</span><span class="htrack"><b style="width:${(n / mx * 100).toFixed(1)}%"></b></span><span class="hv">${fmtN(n)}</span></div>`).join("") : `<div class="empty">无数据</div>`;
+  if (onClick) el.onclick = e => { const r = e.target.closest(".hrow"); if (r) onClick(r.dataset.k); };
+}
+function yearSegs() {
+  const years = [...new Set(ROWS.filter(r => r.active).map(r => (r._fy || "").slice(0, 4)).filter(Boolean))].sort().slice(-3);
+  const html = years.map(y => `<button data-y="${y}" class="${y === yearSel ? "on" : ""}">${y}</button>`).join("") + `<button data-y="" class="${yearSel === "" ? "on" : ""}">全部</button>`;
+  document.querySelectorAll(".yearSeg, #stateYear").forEach(s => { s.innerHTML = html; s.onclick = e => { if (e.target.dataset.y != null) { yearSel = e.target.dataset.y; renderOverview(); } }; });
+}
+function renderOverview() {
+  const act = ROWS.filter(r => r.active);
+  const now = new Date(), thisM = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+  const prevD = new Date(now.getFullYear(), now.getMonth() - 1, 1), prevM = prevD.getFullYear() + "-" + String(prevD.getMonth() + 1).padStart(2, "0");
+  const y = String(now.getFullYear());
+  const nThis = act.filter(r => r._fy === thisM).length, nPrev = act.filter(r => r._fy === prevM).length;
+  const nYear = act.filter(r => (r._fy || "").startsWith(y)).length;
+  const cfgPct = act.length ? act.filter(r => r.hasConfig).length / act.length * 100 : 0;
+  const ch = META.changes || {};
+  $("#kpis").innerHTML = [
+    ["在用车辆", fmtN(act.length), `共 ${fmtN(ROWS.length)} 台，含已取消`],
+    ["本月新车", fmtN(nThis), `上月 ${fmtN(nPrev)}`],
+    [`${y} 年新车`, fmtN(nYear), `按首张销售单`],
+    ["有 CPQ 配置", cfgPct.toFixed(0) + "%", `${fmtN(act.filter(r => r.hasConfig).length)} 台在用车辆`],
+    ["上次同步变化", `<span style="color:var(--emerald)">+${fmtN(ch.new || 0)}</span> <span style="color:var(--amber);font-size:20px">~${fmtN(ch.mod || 0)}</span>`, `新增 / 修改 · 消失 ${fmtN(ch.del || 0)}`],
+  ].map(([l, v, s]) => `<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
+
+  // months
+  const byM = new Map(); act.forEach(r => { if (r._fy) byM.set(r._fy, (byM.get(r._fy) || 0) + 1); });
+  let months = [...byM.keys()].sort();
+  if (months.length) {
+    const all = []; let [yy, mm] = months[0].split("-").map(Number); const [ey, em] = thisM.split("-").map(Number);
+    while (yy < ey || (yy === ey && mm <= em)) { all.push(yy + "-" + String(mm).padStart(2, "0")); mm++; if (mm > 12) { mm = 1; yy++; } }
+    months = monthsN ? all.slice(-monthsN) : all;
+  }
+  const mx = Math.max(1, ...months.map(m => byM.get(m) || 0));
+  $("#monthBars").innerHTML = months.map(m => { const n = byM.get(m) || 0; return `<div class="bar" title="${m}: ${n} 台" data-m="${m}"><em>${n || ""}</em><b style="height:${n / mx * 82}%"></b><span>${m.slice(2).replace("-", "/")}</span></div>`; }).join("");
+  $("#monthBars").onclick = e => { const b = e.target.closest(".bar"); if (b) { const [Y, M] = b.dataset.m.split("-"); const last = new Date(+Y, +M, 0).getDate(); setFilters({from: `${b.dataset.m}-01`, to: `${b.dataset.m}-${last}`}); } };
+
+  yearSegs();
+  const yr = act.filter(r => !yearSel || (r._fy || "").startsWith(yearSel));
+  hlist($("#byDealer"), countBy(yr, r => r.dealer), k => setFilters({dealer: k, ...yrRange()}), 12);
+  hlist($("#byModel"), countBy(yr, r => r.model || r.productCode), k => setFilters({model: k, ...yrRange()}), 12);
+  hlist($("#byState"), countBy(yr, r => r.state), k => setFilters({state: k, ...yrRange()}), 10);
+  renderLastChanges();
+}
+function yrRange() { return yearSel ? {from: yearSel + "-01-01", to: yearSel + "-12-31"} : {}; }
+$("#monthsSeg").onclick = e => { if (e.target.dataset.n) { monthsN = +e.target.dataset.n; document.querySelectorAll("#monthsSeg button").forEach(b => b.classList.toggle("on", b === e.target)); renderOverview(); } };
+$("#toChanges").onclick = e => { e.preventDefault(); go("changes"); };
+
+async function renderLastChanges() {
+  const el = $("#lastChanges");
+  try {
+    const runs = await loadRuns();
+    const ids = Object.keys(runs).sort().reverse();
+    if (!ids.length) { el.innerHTML = `<div class="empty">还没有变更记录</div>`; return; }
+    const items = Object.entries(runs[ids[0]] || {}).filter(([k, c]) => c.t !== "none").sort((a, b) => ORDER[a[1].t] - ORDER[b[1].t]);
+    el.innerHTML = `<div style="color:var(--muted);margin-bottom:6px">${esc(ids[0].replace("_", " "))}</div>` + (items.length ?
+      `<div class="hlist">${items.slice(0, 12).map(([k, c]) => `<div class="hrow" style="grid-template-columns:52px minmax(0,1fr) auto" data-k="${esc(k)}">${badge(c.t)}<span class="hn"><span class="mono">${esc(c.c || k)}</span> · ${esc(c.m || "")}</span><span style="color:var(--muted);font-size:11px" class="hn">${esc((c.f || []).slice(0, 3).join(", "))}</span></div>`).join("")}</div>` +
+      (items.length > 12 ? `<div style="color:var(--muted);margin-top:6px">还有 ${items.length - 12} 条…</div>` : "") : `<div class="empty">没有变化</div>`);
+    el.querySelector(".hlist") && (el.querySelector(".hlist").onclick = e => { const r = e.target.closest(".hrow"); if (r) openVehicle(r.dataset.k); });
+  } catch (e) { el.innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; }
+}
+
+/* ---------------- orders table ---------------- */
+const COLS = [
+  ["chassis", "车架号", r => `<span class="mono">${esc(r.chassis || "—")}</span>`, "mono"],
+  ["model", "车型", r => esc(r.model || r.productCode || "")],
+  ["dealer", "经销商", r => `<span class="ell" style="display:inline-block" title="${esc(r.dealer)}">${esc(r.dealer)}</span>`],
+  ["state", "州", r => esc(r.state || "")],
+  ["customer", "客户", r => `<span class="ell" style="display:inline-block;max-width:180px" title="${esc(r.customer)}">${esc(r.customer || "")}</span>`],
+  ["so", "销售单", r => esc(r.so || ""), "mono"],
+  ["soStatus", "状态", r => statusPill(r)],
+  ["po", "采购单", r => esc(r.po || ""), "mono"],
+  ["erp", "ERP 销售单", r => esc(r.erp || ""), "mono"],
+  ["firstPlaced", "首张销售单", r => fmtD(r.firstPlaced)],
+  ["updated", "最后更新", r => fmtD(r.updated)],
+  ["soTotal", "销售单金额", r => fmtM(r.soTotal), "num"],
+  ["hasConfig", "配置 / 图 / Spec", r => `<span class="flags"><span class="${r.hasConfig ? "y" : ""}" title="CPQ 配置">C</span><span class="${r.hasFloorPlan ? "y" : ""}" title="floor plan">F</span><span class="${r.hasSpecSheet ? "y" : ""}" title="spec sheet">S</span></span>${r.realloc ? ' <span class="pill p-am" title="经历过调拨">调拨</span>' : ""}`],
+];
+function statusPill(r) {
+  if (!r.active) return `<span class="pill p-cx">已取消</span>`;
+  const s = r.soStatus || r.poStatus || "";
+  return s === "COMPLETED" ? `<span class="pill p-in">已完成</span>` : `<span class="pill p-ok">${s === "CREATED" ? "已创建" : esc(s)}</span>`;
+}
+function fillFilters() {
+  const opts = (sel, vals) => { const el = $(sel); vals.forEach(([v, n]) => el.insertAdjacentHTML("beforeend", `<option value="${esc(v)}">${esc(v)} (${fmtN(n)})</option>`)); };
+  opts("#fDealer", countBy(ROWS, r => r.dealer).sort((a, b) => a[0].localeCompare(b[0])));
+  opts("#fState", countBy(ROWS, r => r.state));
+  opts("#fModel", countBy(ROWS, r => r.model || r.productCode).sort((a, b) => a[0].localeCompare(b[0])));
+  $("#tbl thead").innerHTML = "<tr>" + COLS.map(([k, l, , c]) => `<th data-k="${k}" class="${c === "num" ? "num" : ""}">${l}<span class="ar"></span></th>`).join("") + "</tr>";
+  $("#tbl thead").onclick = e => { const th = e.target.closest("th"); if (!th) return; const k = th.dataset.k; view.dir = view.sort === k ? -view.dir : (k === "firstPlaced" || k === "updated" || k === "soTotal" ? -1 : 1); view.sort = k; view.page = 0; applyFilters(); };
+}
+let qTimer;
+$("#q").oninput = () => { clearTimeout(qTimer); qTimer = setTimeout(() => { view.page = 0; applyFilters(); }, 150); };
+["#fDealer", "#fState", "#fModel", "#fStatus", "#fFlag", "#fFrom", "#fTo"].forEach(s => $(s).onchange = () => { view.page = 0; applyFilters(); });
+$("#reset").onclick = () => setFilters({});
+function setFilters(f) {
+  $("#q").value = f.q || ""; $("#fDealer").value = f.dealer || ""; $("#fState").value = f.state || ""; $("#fModel").value = f.model || "";
+  $("#fStatus").value = f.status ?? "active"; $("#fFlag").value = f.flag || ""; $("#fFrom").value = f.from || ""; $("#fTo").value = f.to || "";
+  view.page = 0; go("orders"); applyFilters();
+}
+function applyFilters() {
+  const q = $("#q").value.trim().toLowerCase(), dl = $("#fDealer").value, st = $("#fState").value, md = $("#fModel").value,
+    ss = $("#fStatus").value, fl = $("#fFlag").value, fr = $("#fFrom").value, to = $("#fTo").value;
+  const frD = fr ? new Date(fr + "T00:00:00") : null, toD = to ? new Date(to + "T23:59:59") : null;
+  let rows = ROWS.filter(r => {
+    if (ss === "active" && !r.active) return false;
+    if (ss === "cancelled" && r.active) return false;
+    if (dl && r.dealer !== dl) return false;
+    if (st && r.state !== st) return false;
+    if (md && (r.model || r.productCode) !== md) return false;
+    if (fl === "realloc" && !r.realloc) return false;
+    if (fl === "nocfg" && r.hasConfig) return false;
+    if (fl === "noplan" && r.hasFloorPlan) return false;
+    if (frD || toD) { const d = parseD(r.firstPlaced); if (!d || (frD && d < frD) || (toD && d > toD)) return false; }
+    if (q) { const hay = [r.chassis, r.so, r.po, r.erp, r.customer, r.dealer, r.model, r.productCode, r.acct].join(" ").toLowerCase(); if (!q.split(/\s+/).every(w => hay.includes(w))) return false; }
+    return true;
+  });
+  const k = view.sort, d = view.dir;
+  rows.sort((a, b) => { let x = a[k], y = b[k]; if (x == null || x === "") return 1; if (y == null || y === "") return -1; return (x > y ? 1 : x < y ? -1 : 0) * d; });
+  view.filtered = rows;
+  document.querySelectorAll("#tbl th").forEach(th => th.querySelector(".ar").textContent = th.dataset.k === k ? (d > 0 ? "↑" : "↓") : "");
+  renderTable();
+}
+function renderTable() {
+  const rows = view.filtered, ps = SETTINGS.pageSize, pages = Math.max(1, Math.ceil(rows.length / ps));
+  view.page = Math.min(view.page, pages - 1);
+  const slice = rows.slice(view.page * ps, view.page * ps + ps);
+  $("#tbl tbody").innerHTML = slice.length ? slice.map(r => `<tr data-k="${esc(r.key)}">${COLS.map(([k, , f, c]) => `<td class="${c || ""}">${f(r)}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${COLS.length}" class="empty">没有符合条件的车</td></tr>`;
+  const amt = rows.reduce((s, r) => s + (r.soTotal || 0), 0);
+  $("#count").innerHTML = `<b>${fmtN(rows.length)}</b> 台 · 销售单合计 ${fmtM(amt)}`;
+  $("#pager").innerHTML = pages > 1 ? `<button class="btn" ${view.page ? "" : "disabled"} data-p="${view.page - 1}">上一页</button><span>${view.page + 1} / ${pages}</span><button class="btn" ${view.page < pages - 1 ? "" : "disabled"} data-p="${view.page + 1}">下一页</button>` : "";
+}
+$("#pager").onclick = e => { if (e.target.dataset.p != null) { view.page = +e.target.dataset.p; renderTable(); $(".tbl-wrap").scrollTop = 0; } };
+$("#tbl tbody").onclick = e => { const tr = e.target.closest("tr[data-k]"); if (tr) openVehicle(tr.dataset.k); };
+$("#csv").onclick = () => {
+  const H = ["车架号", "车型", "车型编码", "经销商", "州", "客户", "下单账号", "销售单", "销售单状态", "采购单", "采购单状态", "ERP销售单", "单据类型", "首张销售单", "首张销售单经销商", "当前销售单时间", "最后更新", "销售单金额", "采购单金额", "调拨", "有配置", "有floor plan", "有spec sheet"];
+  const F = ["chassis", "model", "productCode", "dealer", "state", "customer", "acct", "so", "soStatus", "po", "poStatus", "erp", "docType", "firstPlaced", "firstDealer", "placed", "updated", "soTotal", "poTotal", "realloc", "hasConfig", "hasFloorPlan", "hasSpecSheet"];
+  const cell = v => { v = v == null ? "" : String(v); if (/^[=+\-@]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  const csv = "﻿" + [H.join(","), ...view.filtered.map(r => F.map(f => cell(f.endsWith("laced") || f === "updated" ? fmtDT(r[f]) : r[f])).join(","))].join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"})); a.download = `commerce_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+};
+
+/* ---------------- vehicle drawer ---------------- */
+function closeDrawer() { $("#drawer").classList.remove("on"); $("#shade").classList.remove("on"); }
+$("#shade").onclick = closeDrawer;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+async function openVehicle(key) {
+  const r = ROWS.find(x => x.key === key);
+  $("#drawer").classList.add("on"); $("#shade").classList.add("on");
+  $("#dh").innerHTML = `<div><h2>${esc(r ? r.chassis || key : key)}</h2><div class="sub">${r ? esc([r.model || r.productCode, r.dealer, r.customer].filter(Boolean).join(" · ")) : ""}</div></div><button class="dx" onclick="closeDrawer()">×</button>`;
+  $("#db").innerHTML = `<div class="loading">加载中…</div>`;
+  let v, cfg;
+  try { [v, cfg] = await Promise.all([get("vehicles/" + key), get("config/" + key).catch(() => null)]); }
+  catch (e) { $("#db").innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; return; }
+  if (!v) { $("#db").innerHTML = `<div class="empty">这台车已不在数据中（可能在最近一次同步中消失）</div>`; return; }
+  const kv = [["状态", r ? statusPill(r) : ""], ["销售单 / 采购单", `${esc(v.so || "—")} / ${esc(v.po || "—")}`], ["ERP 销售单", esc(v.erp || "—")],
+    ["经销商", esc(v.dealer)], ["州", esc(v.state || "—")], ["客户", esc(v.customer || "—")],
+    ["首张销售单", fmtDT(v.firstPlaced) + (v.firstDealer && v.firstDealer !== v.dealer ? ` · ${esc(v.firstDealer)}` : "")], ["最后更新", fmtDT(v.updated)], ["车型编码", esc((cfg && cfg.productCode) || "—")],
+    ["销售单金额", fmtM(v.soTotal) || "—"], ["采购单金额", fmtM(v.poTotal) || "—"], ["单据类型", esc(v.docType || "—")]];
+  const cfgFrom = (v.orders || []).find(o => o.type === "SO" && o.status !== "CANCELLED") || (v.orders || [])[0];
+  let html = `<div class="kv">${kv.map(([l, x]) => `<div><label>${l}</label><span>${x}</span></div>`).join("")}</div>
+    <div class="links"><a class="${v.floorPlan ? "" : "off"}" href="${esc(v.floorPlan || "#")}" target="_blank" rel="noopener">Floor plan ↗</a>
+    <a class="${v.specSheet ? "" : "off"}" href="${esc(v.specSheet || "#")}" target="_blank" rel="noopener">Spec sheet ↗</a></div>
+    <div class="sec">订单记录 <span class="pill p-gr">${(v.orders || []).length}</span></div>
+    <div class="tbl-wrap"><table><thead><tr><th>订单</th><th>类型</th><th>状态</th><th>下单</th><th>账号</th><th>经销商</th><th class="num">金额</th><th>ERP</th></tr></thead><tbody>
+    ${(v.orders || []).slice().reverse().map(o => `<tr style="cursor:default"><td class="mono">${esc(o.code)}</td><td>${o.type === "SO" ? '<span class="pill p-in">销售单</span>' : o.type === "PO" ? '<span class="pill p-gr">采购单</span>' : esc(o.type)}</td>
+      <td>${o.status === "CANCELLED" ? '<span class="pill p-cx">已取消</span>' : o.status === "COMPLETED" ? '<span class="pill p-in">已完成</span>' : '<span class="pill p-ok">已创建</span>'}</td>
+      <td>${fmtDT(o.placed)}</td><td class="ell" title="${esc(o.acct)}">${esc(o.acct)}</td><td class="ell" title="${esc(o.dealer)}">${esc(o.dealer || "")}</td><td class="num">${fmtM(o.total)}</td><td class="mono">${esc(o.erp || "")}</td></tr>`).join("")}
+    </tbody></table></div>`;
+  if (cfg && cfg.groups) {
+    const n = Object.values(cfg.groups).reduce((s, g) => s + Object.keys(g).length, 0);
+    html += `<div class="sec">CPQ 配置 <span class="pill p-gr">${n} 项</span><input class="in" id="cfgq" placeholder="筛选配置…" style="margin-left:auto;height:28px;width:200px"></div><div id="cfgbox"></div>`;
+  } else {
+    html += `<div class="sec">CPQ 配置</div><div class="empty">SAP 没有返回这台车的配置</div>`;
+  }
+  $("#db").innerHTML = html;
+  if (cfg && cfg.groups) {
+    const draw = q => {
+      q = (q || "").toLowerCase();
+      const hl = s => { s = esc(s); if (!q) return s; const i = s.toLowerCase().indexOf(q); return i < 0 ? s : s.slice(0, i) + "<mark>" + s.slice(i, i + q.length) + "</mark>" + s.slice(i + q.length); };
+      $("#cfgbox").innerHTML = Object.entries(cfg.groups).map(([g, chars]) => {
+        const items = Object.entries(chars).filter(([c, val]) => !q || (c + " " + val).toLowerCase().includes(q));
+        return items.length ? `<details class="cfg-g" open><summary><span>${esc(g)}</span><span style="color:var(--muted);font-weight:400">${items.length}</span></summary><table><tbody>${items.map(([c, val]) => `<tr style="cursor:default"><td>${hl(c)}</td><td>${hl(val)}</td></tr>`).join("")}</tbody></table></details>` : "";
+      }).join("") || `<div class="empty">没有匹配的配置项</div>`;
+    };
+    draw(""); $("#cfgq").oninput = e => draw(e.target.value);
+  }
+}
+
+/* ---------------- config analysis ---------------- */
+let STATS = null, curChar = null, curModel = "";
+async function loadCfgStats() {
+  if (STATS) return;
+  try { STATS = await get("configStats"); } catch (e) { $("#clist").innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; return; }
+  drawCharList(""); $("#cq").oninput = e => drawCharList(e.target.value);
+  if (STATS.chars && STATS.chars.length) selectChar(STATS.chars.find(c => /colour/i.test(c.c)) ? STATS.chars.find(c => /colour/i.test(c.c)).c : STATS.chars[0].c);
+}
+function drawCharList(q) {
+  q = q.toLowerCase(); let html = "", g = null;
+  STATS.chars.filter(c => !q || c.c.toLowerCase().includes(q) || c.v.some(v => String(v.v).toLowerCase().includes(q))).forEach(c => {
+    if (c.g !== g) { g = c.g; html += `<div class="cgrp">${esc(g)}</div>`; }
+    html += `<div class="citem ${c.c === curChar ? "on" : ""}" data-c="${esc(c.c)}"><span>${esc(c.c)}</span><small>${fmtN(c.n)}</small></div>`;
+  });
+  $("#clist").innerHTML = html || `<div class="empty">没有匹配</div>`;
+  $("#clist").onclick = e => { const it = e.target.closest(".citem"); if (it) selectChar(it.dataset.c); };
+}
+function selectChar(c) {
+  curChar = c; document.querySelectorAll(".citem").forEach(x => x.classList.toggle("on", x.dataset.c === c));
+  const ch = STATS.chars.find(x => x.c === c); if (!ch) return;
+  const vals = ch.v.map(v => ({v: v.v, n: curModel ? ((v.m.find(m => m[0] === curModel) || [0, 0])[1]) : v.n, m: v.m})).filter(v => v.n > 0).sort((a, b) => b.n - a.n);
+  const tot = vals.reduce((s, v) => s + v.n, 0), mx = vals.length ? vals[0].n : 1;
+  const models = STATS.models.filter(([m]) => ch.v.some(v => v.m.some(x => x[0] === m)));
+  $("#cpanel").innerHTML = `<h3 style="font-size:15px;color:var(--text)"><span>${esc(c)} <span style="color:var(--muted);font-weight:400;font-size:12px">· ${esc(ch.g)}</span></span>
+    <select class="in" id="cm"><option value="">全部车型 (${fmtN(STATS.vehicles)})</option>${models.map(([m, n]) => `<option value="${esc(m)}" ${m === curModel ? "selected" : ""}>${esc(m)} (${fmtN(n)})</option>`).join("")}</select></h3>
+    <div style="color:var(--muted);margin-bottom:8px">${fmtN(tot)} 台在用且有配置的车 · ${vals.length} 种取值</div>
+    ${vals.map(v => `<div class="vrow"><span title="${esc(v.v)}" class="hn">${esc(v.v)}</span><span class="htrack"><b style="width:${(v.n / mx * 100).toFixed(1)}%"></b></span><span class="hv">${fmtN(v.n)}</span><span style="color:var(--muted);text-align:right">${(v.n / tot * 100).toFixed(1)}%</span></div>`).join("")}
+    ${!curModel ? `<div class="sec" style="margin-top:22px">各车型的选择（前 12 个车型）</div>${modelMatrix(ch)}` : ""}`;
+  $("#cm").onchange = e => { curModel = e.target.value; selectChar(c); };
+}
+function modelMatrix(ch) {
+  const mods = STATS.models.filter(([m]) => ch.v.some(v => v.m.some(x => x[0] === m))).slice(0, 12).map(x => x[0]);
+  const vals = ch.v.slice(0, 8);
+  const cellN = (v, m) => (v.m.find(x => x[0] === m) || [0, 0])[1];
+  return `<div class="tbl-wrap"><table><thead><tr><th>车型</th>${vals.map(v => `<th class="num" title="${esc(v.v)}">${esc(String(v.v).slice(0, 18))}</th>`).join("")}</tr></thead><tbody>
+    ${mods.map(m => { const tot = ch.v.reduce((s, v) => s + cellN(v, m), 0); return `<tr style="cursor:default"><td>${esc(m)}</td>${vals.map(v => { const n = cellN(v, m), p = tot ? n / tot : 0; return `<td class="num" style="background:rgba(79,70,229,${(p * .35).toFixed(3)})">${n ? (p * 100).toFixed(0) + "%" : ""}</td>`; }).join("")}</tr>`; }).join("")}
+    </tbody></table></div>`;
+}
+
+/* ---------------- changes ---------------- */
+let RUNS = null;
+async function loadRuns() {
+  if (!RUNS) RUNS = await get("changes", 'orderBy="$key"&limitToLast=30') || {};
+  return RUNS;
+}
+const ORDER = {new: 0, mod: 1, del: 2};
+const badge = t => ({new: '<span class="pill p-ok">新增</span>', mod: '<span class="pill p-am">修改</span>', del: '<span class="pill p-cx">消失</span>'}[t] || "");
+async function loadChanges() {
+  const el = $("#runs");
+  try {
+    const runs = await loadRuns(); const ids = Object.keys(runs).sort().reverse();
+    if (!ids.length) { el.innerHTML = `<div class="empty">还没有变更记录</div>`; return; }
+    el.innerHTML = ids.map((id, i) => {
+      const items = Object.entries(runs[id] || {}).filter(([, c]) => c.t !== "none");
+      const n = t => items.filter(([, c]) => c.t === t).length;
+      return `<details class="card run" style="padding:0" ${i === 0 ? "open" : ""}><summary><b>${esc(id.replace("_", " "))}</b>
+        <span class="pill p-ok">+${n("new")}</span><span class="pill p-am">~${n("mod")}</span><span class="pill p-cx">−${n("del")}</span></summary>
+        ${items.length ? `<div style="max-height:calc(100vh - 220px);overflow:auto"><table><thead><tr><th>类型</th><th>车架号</th><th>销售单</th><th>车型</th><th>经销商</th><th>变化字段</th></tr></thead><tbody>
+        ${items.sort((a, b) => ORDER[a[1].t] - ORDER[b[1].t]).map(([k, c]) => `<tr data-k="${esc(k)}"><td>${badge(c.t)}</td><td class="mono">${esc(c.c || k)}</td><td class="mono">${esc(c.so || "")}</td><td>${esc(c.m || "")}</td><td>${esc(c.d || "")}</td><td style="white-space:normal;color:var(--muted)">${esc((c.f || []).join(", "))}</td></tr>`).join("")}
+        </tbody></table></div>` : `<div class="empty">没有变化</div>`}</details>`;
+    }).join("");
+    el.onclick = e => { const tr = e.target.closest("tr[data-k]"); if (tr) openVehicle(tr.dataset.k); };
+  } catch (e) { el.innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; }
+}
+
+boot().then(() => { const h = location.hash.slice(1); if (["orders", "cfg", "changes"].includes(h)) go(h); });
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Render Blueprint: 网页（免费静态站）+ 每日同步（cron job）
+services:
+  # 网页：直接读 Firebase，Render 只负责托管这个 HTML
+  - type: web
+    name: commerce-dashboard
+    runtime: static
+    buildCommand: "true"
+    staticPublishPath: ./web
+    headers:
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow
+
+  # 每天同步：SAP -> 和上次快照比对 -> 只把变化写进 Firebase
+  - type: cron
+    name: commerce-sync
+    runtime: python
+    region: singapore
+    plan: 1c-2g            # 同步峰值内存约 600 MB，512 MB 的实例不够
+    schedule: "30 18 * * *" # UTC 18:30 = 悉尼夏令时 05:30（冬令时 04:30）
+    buildCommand: pip install -r requirements.txt
+    startCommand: python commerce_sync.py
+    envVars:
+      - key: CS_FIREBASE_ENABLED
+        value: "true"
+      - key: CS_STATE_BACKEND
+        value: firebase
+      - key: CS_EXCEL_ENABLED
+        value: "false"
+      - key: CS_FIREBASE_URL
+        value: https://saleslistforplanning-default-rtdb.asia-southeast1.firebasedatabase.app
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON   # 在 Render 里粘贴服务账号 JSON 的全部内容
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.9"

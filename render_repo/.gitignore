@@ -1,0 +1,8 @@
+state/
+output/
+logs/
+*.json.gz
+*firebase*key*.json
+*-firebase-adminsdk-*.json
+__pycache__/
+.env
