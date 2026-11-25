@@ -174,7 +174,9 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px}
       </select>
       <input class="in" type="date" id="fFrom" title="首张销售单 从"><input class="in" type="date" id="fTo" title="首张销售单 到">
       <button class="btn" id="reset">清空</button>
-      <button class="btn" id="csv">导出 CSV</button>
+      <button class="btn pri" id="xlsx">导出 Excel</button>
+      <button class="btn" id="xlsxCfg" title="每台车的完整 CPQ 配置、floor plan 和 spec sheet 链接（最多 500 台）">导出 Excel（含配置）</button>
+      <button class="btn" id="csv">CSV</button>
       <span class="count" id="count"></span>
     </div>
     <div class="tbl-wrap" style="max-height:calc(100vh - 210px)"><table id="tbl"><thead></thead><tbody></tbody></table></div>
@@ -416,8 +418,104 @@ $("#csv").onclick = () => {
   const F = ["chassis", "model", "productCode", "dealer", "state", "customer", "acct", "so", "soStatus", "po", "poStatus", "erp", "docType", "firstPlaced", "firstDealer", "placed", "updated", "soTotal", "poTotal", "realloc", "hasConfig", "hasFloorPlan", "hasSpecSheet"];
   const cell = v => { v = v == null ? "" : String(v); if (/^[=+\-@]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
   const csv = "﻿" + [H.join(","), ...view.filtered.map(r => F.map(f => cell(f.endsWith("laced") || f === "updated" ? fmtDT(r[f]) : r[f])).join(","))].join("\r\n");
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"})); a.download = `commerce_${new Date().toISOString().slice(0, 10)}.csv`; a.click();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"})); a.download = `commerce_${new Date().toLocaleDateString("en-CA")}.csv`; a.click();
 };
+
+/* ---------------- Excel export ---------------- */
+const XLSX_URL = "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+let xlsxLib = null;
+function loadXlsx() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (!xlsxLib) xlsxLib = new Promise((ok, bad) => {
+    const sc = document.createElement("script"); sc.src = XLSX_URL;
+    sc.onload = () => ok(window.XLSX); sc.onerror = () => { xlsxLib = null; bad(new Error("Excel 组件加载失败，请检查网络")); };
+    document.head.appendChild(sc);
+  });
+  return xlsxLib;
+}
+const toDate = s => { const d = parseD(s); return d && !isNaN(d) ? d : null; };
+const LIST_COLS = [
+  ["车架号", r => r.chassis, 12], ["车型", r => r.model, 14], ["车型编码", r => r.productCode, 11],
+  ["经销商", r => r.dealer, 30], ["州", r => r.state, 6], ["客户", r => r.customer, 26], ["下单账号", r => r.acct, 30],
+  ["销售单", r => r.so, 10], ["销售单状态", r => r.soStatus, 11], ["采购单", r => r.po, 10], ["采购单状态", r => r.poStatus, 11],
+  ["在用", r => r.active ? "是" : "否", 6], ["ERP 销售单", r => r.erp, 12], ["单据类型", r => r.docType, 8],
+  ["首张销售单", r => toDate(r.firstPlaced), 17], ["首张销售单经销商", r => r.firstDealer, 26], ["当前销售单时间", r => toDate(r.placed), 17],
+  ["最后更新", r => toDate(r.updated), 17], ["销售单金额", r => r.soTotal, 13], ["采购单金额", r => r.poTotal, 13],
+  ["经历调拨", r => r.realloc ? "是" : "", 8], ["有配置", r => r.hasConfig ? "是" : "", 7],
+  ["有 floor plan", r => r.hasFloorPlan ? "是" : "", 9], ["有 spec sheet", r => r.hasSpecSheet ? "是" : "", 9],
+];
+function filterSummary() {
+  const f = [["搜索", $("#q").value], ["经销商", $("#fDealer").value], ["州", $("#fState").value], ["车型", $("#fModel").value],
+    ["状态", $("#fStatus").selectedOptions[0].text], ["其他", $("#fFlag").value ? $("#fFlag").selectedOptions[0].text : ""],
+    ["首张销售单从", $("#fFrom").value], ["首张销售单到", $("#fTo").value]];
+  return f.filter(([, v]) => v);
+}
+function sheetFrom(X, header, rows, widths, dateCols, moneyCols) {
+  const ws = X.utils.aoa_to_sheet([header, ...rows], {cellDates: true});
+  const range = X.utils.decode_range(ws["!ref"]);
+  for (let R = 1; R <= range.e.r; R++) {
+    dateCols.forEach(C => { const c = ws[X.utils.encode_cell({r: R, c: C})]; if (c && c.t === "d") c.z = "yyyy-mm-dd hh:mm"; });
+    moneyCols.forEach(C => { const c = ws[X.utils.encode_cell({r: R, c: C})]; if (c && c.t === "n") c.z = "$#,##0.00"; });
+  }
+  ws["!cols"] = widths.map(w => ({wch: w}));
+  ws["!autofilter"] = {ref: ws["!ref"]};
+  return ws;
+}
+async function exportExcel(withCfg) {
+  const rows = view.filtered;
+  if (!rows.length) { alert("没有可导出的车"); return; }
+  if (withCfg && rows.length > 500) { alert(`含配置的导出最多 500 台，当前筛选结果有 ${rows.length} 台。请先缩小筛选范围（例如选经销商、车型或日期）。`); return; }
+  const btn = withCfg ? $("#xlsxCfg") : $("#xlsx"), label = btn.textContent;
+  btn.disabled = true; btn.textContent = "准备中…";
+  try {
+    const X = await loadXlsx();
+    const wb = X.utils.book_new();
+    const idxOf = names => names.map(n => LIST_COLS.findIndex(c => c[0] === n));
+    const dateIdx = idxOf(["首张销售单", "当前销售单时间", "最后更新"]), moneyIdx = idxOf(["销售单金额", "采购单金额"]);
+    if (!withCfg) {
+      X.utils.book_append_sheet(wb, sheetFrom(X, LIST_COLS.map(c => c[0]), rows.map(r => LIST_COLS.map(c => c[1](r) ?? null)), LIST_COLS.map(c => c[2]), dateIdx, moneyIdx), "车辆");
+    } else {
+      // fetch details + configuration for each vehicle, 8 at a time
+      const out = new Array(rows.length); let done = 0, i = 0;
+      const worker = async () => {
+        while (i < rows.length) {
+          const k = i++, r = rows[k];
+          const [v, cfg] = await Promise.all([get("vehicles/" + r.key).catch(() => null), r.hasConfig ? get("config/" + r.key).catch(() => null) : null]);
+          out[k] = {r, v, cfg}; done++;
+          if (done % 10 === 0) btn.textContent = `读取配置 ${done}/${rows.length}`;
+        }
+      };
+      await Promise.all(Array.from({length: 8}, worker));
+      const groupsOf = cfg => !cfg || !cfg.groups ? [] : Array.isArray(cfg.groups) ? cfg.groups.map(x => [x.g, x.c || []]) : Object.entries(cfg.groups).map(([g, o]) => [g, Object.entries(o)]);
+      const cols = new Map();  // option -> group, in first-seen order
+      out.forEach(o => groupsOf(o.cfg).forEach(([g, cs]) => cs.forEach(([c]) => { if (!cols.has(c)) cols.set(c, g); })));
+      const opts = [...cols.keys()];
+      const H = [...LIST_COLS.map(c => c[0]), "Floor plan", "Spec sheet", ...opts];
+      const body = out.map(({r, v, cfg}) => {
+        const m = new Map(); groupsOf(cfg).forEach(([, cs]) => cs.forEach(([c, val]) => m.set(c, val)));
+        return [...LIST_COLS.map(c => c[1](r) ?? null), v && v.floorPlan || null, v && v.specSheet || null, ...opts.map(o => m.get(o) ?? null)];
+      });
+      const ws = sheetFrom(X, H, body, [...LIST_COLS.map(c => c[2]), 14, 14, ...opts.map(() => 24)], dateIdx, moneyIdx);
+      // clickable links
+      [LIST_COLS.length, LIST_COLS.length + 1].forEach((C, j) => {
+        for (let R = 1; R <= body.length; R++) {
+          const cell = ws[X.utils.encode_cell({r: R, c: C})];
+          if (cell && cell.v) { cell.l = {Target: cell.v}; cell.v = j ? "spec sheet" : "floor plan"; }
+        }
+      });
+      X.utils.book_append_sheet(wb, ws, "车辆和配置");
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([["配置分组", "配置项"], ...opts.map(o => [cols.get(o), o])]), "配置项分组");
+    }
+    const info = [["导出时间", new Date().toLocaleString("en-AU")], ["数据同步时间", fmtDT(META.lastRun)], ["车辆数", rows.length],
+      ["销售单金额合计", Math.round(rows.reduce((s, r) => s + (r.soTotal || 0), 0) * 100) / 100], [], ["筛选条件", ""], ...filterSummary()];
+    X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(info), "说明");
+    const tag = [$("#fDealer").value, $("#fModel").value].filter(Boolean).join("_").replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 40);
+    X.writeFile(wb, `车辆${withCfg ? "配置" : ""}_${tag ? tag + "_" : ""}${new Date().toLocaleDateString("en-CA")}.xlsx`, {compression: true});
+  } catch (e) { alert("导出失败：" + e.message); }
+  finally { btn.disabled = false; btn.textContent = label; }
+}
+$("#xlsx").onclick = () => exportExcel(false);
+$("#xlsxCfg").onclick = () => exportExcel(true);
 
 /* ---------------- vehicle drawer ---------------- */
 function closeDrawer() { $("#drawer").classList.remove("on"); $("#shade").classList.remove("on"); }
