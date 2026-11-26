@@ -24,6 +24,7 @@ a:hover{text-decoration:underline}
 .tab{border:0;background:none;padding:0 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;height:100%}
 .tab:hover{color:var(--text)}
 .tab.on{color:var(--text);border-bottom-color:var(--indigo);font-weight:600}
+.lang{margin-left:12px}
 .sync{margin-left:auto;color:var(--muted);font-size:12px;white-space:nowrap;display:flex;gap:8px;align-items:center}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);display:inline-block}
 .dot.warn{background:var(--amber)}.dot.err{background:var(--red)}
@@ -128,14 +129,15 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px}
 </head>
 <body>
 <div class="top"><div class="top-in">
-  <div class="brand"><i></i>Commerce 订单与配置</div>
+  <div class="brand"><i></i><span data-i18n="Commerce 订单与配置">Commerce 订单与配置</span></div>
   <nav class="tabs" id="tabs">
-    <button class="tab on" data-v="overview">总览</button>
-    <button class="tab" data-v="orders">订单</button>
-    <button class="tab" data-v="cfg">配置分析</button>
-    <button class="tab" data-v="changes">变更记录</button>
+    <button class="tab on" data-v="overview" data-i18n="总览">总览</button>
+    <button class="tab" data-v="orders" data-i18n="订单">订单</button>
+    <button class="tab" data-v="cfg" data-i18n="配置分析">配置分析</button>
+    <button class="tab" data-v="changes" data-i18n="变更记录">变更记录</button>
   </nav>
-  <div class="sync" id="sync"><span class="dot warn"></span>加载中…</div>
+  <div class="sync" id="sync"><span class="dot warn"></span>…</div>
+  <span class="seg lang" id="langSeg"><button data-l="zh">中文</button><button data-l="en">EN</button></span>
 </div></div>
 
 <main>
@@ -146,36 +148,36 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px}
     <div class="grid kpis" id="kpis"></div>
     <div class="grid two" style="margin-top:14px">
       <div class="card">
-        <h3><span>每月新车（按首张销售单月份，不含已全部取消的车）</span>
-          <span class="seg" id="monthsSeg"><button data-n="12">12 个月</button><button data-n="24" class="on">24 个月</button><button data-n="0">全部</button></span></h3>
+        <h3><span data-i18n="每月新车（按首张销售单月份，不含已全部取消的车）"></span>
+          <span class="seg" id="monthsSeg"><button data-n="12" data-i18n="12 个月"></button><button data-n="24" class="on" data-i18n="24 个月"></button><button data-n="0" data-i18n="全部"></button></span></h3>
         <div class="bars" id="monthBars"></div>
       </div>
-      <div class="card"><h3><span>按州</span><span id="stateYear" class="seg"></span></h3><div class="hlist" id="byState"></div></div>
+      <div class="card"><h3><span data-i18n="按州"></span><span id="stateYear" class="seg"></span></h3><div class="hlist" id="byState"></div></div>
     </div>
     <div class="grid three" style="margin-top:14px">
-      <div class="card"><h3><span>经销商排名</span><span class="seg yearSeg" data-t="dealer"></span></h3><div class="hlist" id="byDealer"></div></div>
-      <div class="card"><h3><span>车型排名</span><span class="seg yearSeg" data-t="model"></span></h3><div class="hlist" id="byModel"></div></div>
-      <div class="card"><h3><span>最近一次同步的变化</span><a href="#" id="toChanges">全部 →</a></h3><div id="lastChanges"></div></div>
+      <div class="card"><h3><span data-i18n="经销商排名"></span><span class="seg yearSeg" data-t="dealer"></span></h3><div class="hlist" id="byDealer"></div></div>
+      <div class="card"><h3><span data-i18n="车型排名"></span><span class="seg yearSeg" data-t="model"></span></h3><div class="hlist" id="byModel"></div></div>
+      <div class="card"><h3><span data-i18n="最近一次同步的变化"></span><a href="#" id="toChanges" data-i18n="全部 →"></a></h3><div id="lastChanges"></div></div>
     </div>
   </section>
 
   <!-- orders -->
   <section class="view" id="v-orders">
     <div class="filters">
-      <input class="in search" id="q" placeholder="搜车架号 / 销售单 / 采购单 / ERP / 客户…">
-      <select class="in" id="fDealer"><option value="">全部经销商</option></select>
-      <select class="in" id="fState"><option value="">全部州</option></select>
-      <select class="in" id="fModel"><option value="">全部车型</option></select>
+      <input class="in search" id="q" data-i18n-ph="搜车架号 / 销售单 / 采购单 / ERP / 客户…">
+      <select class="in" id="fDealer"><option value="" data-i18n="全部经销商"></option></select>
+      <select class="in" id="fState"><option value="" data-i18n="全部州"></option></select>
+      <select class="in" id="fModel"><option value="" data-i18n="全部车型"></option></select>
       <select class="in" id="fStatus">
-        <option value="active">在用（未全部取消）</option><option value="">全部</option><option value="cancelled">已全部取消</option>
+        <option value="active" data-i18n="在用（未全部取消）"></option><option value="" data-i18n="全部"></option><option value="cancelled" data-i18n="已全部取消"></option>
       </select>
       <select class="in" id="fFlag">
-        <option value="">全部</option><option value="realloc">经历过调拨</option><option value="nocfg">没有配置</option><option value="noplan">没有 floor plan</option>
+        <option value="" data-i18n="全部"></option><option value="realloc" data-i18n="经历过调拨"></option><option value="nocfg" data-i18n="没有配置"></option><option value="noplan" data-i18n="没有 floor plan"></option>
       </select>
-      <input class="in" type="date" id="fFrom" title="首张销售单 从"><input class="in" type="date" id="fTo" title="首张销售单 到">
-      <button class="btn" id="reset">清空</button>
-      <button class="btn pri" id="xlsx">导出 Excel</button>
-      <button class="btn" id="xlsxCfg" title="每台车的完整 CPQ 配置、floor plan 和 spec sheet 链接（最多 500 台）">导出 Excel（含配置）</button>
+      <input class="in" type="date" id="fFrom" data-i18n-title="首张销售单 从"><input class="in" type="date" id="fTo" data-i18n-title="首张销售单 到">
+      <button class="btn" id="reset" data-i18n="清空"></button>
+      <button class="btn pri" id="xlsx" data-i18n="导出 Excel"></button>
+      <button class="btn" id="xlsxCfg" data-i18n-title="每台车的完整 CPQ 配置、floor plan 和 spec sheet 链接（最多 500 台）" data-i18n="导出 Excel（含配置）"></button>
       <button class="btn" id="csv">CSV</button>
       <span class="count" id="count"></span>
     </div>
@@ -187,15 +189,15 @@ mark{background:#fef08a;padding:0 1px;border-radius:2px}
   <section class="view" id="v-cfg">
     <div class="ca">
       <div class="card" style="padding:8px">
-        <input class="in" id="cq" placeholder="搜配置项…" style="width:100%;margin-bottom:4px">
-        <div class="clist" id="clist"><div class="loading">加载中…</div></div>
+        <input class="in" id="cq" data-i18n-ph="搜配置项…" style="width:100%;margin-bottom:4px">
+        <div class="clist" id="clist"><div class="loading">…</div></div>
       </div>
-      <div class="card" id="cpanel"><div class="loading">选择左边的配置项</div></div>
+      <div class="card" id="cpanel"><div class="loading" data-i18n="选择左边的配置项"></div></div>
     </div>
   </section>
 
   <!-- changes -->
-  <section class="view" id="v-changes"><div id="runs"><div class="loading">加载中…</div></div></section>
+  <section class="view" id="v-changes"><div id="runs"><div class="loading">…</div></div></section>
 </main>
 
 <div class="shade" id="shade"></div>
@@ -223,6 +225,65 @@ const fmtM = n => n == null ? "" : "$" + Number(n).toLocaleString("en-AU", {maxi
 const parseD = s => s ? new Date(String(s).replace(/([+-]\d\d)(\d\d)$/, "$1:$2")) : null;
 const fmtD = s => { const d = parseD(s); return d && !isNaN(d) ? d.toLocaleDateString("en-CA") : ""; };
 const fmtDT = s => { const d = parseD(s); return d && !isNaN(d) ? d.toLocaleDateString("en-CA") + " " + d.toTimeString().slice(0,5) : ""; };
+/* ---------------- language ---------------- */
+let LANG = (() => { const q = new URLSearchParams(location.search).get("lang"); if (q === "en" || q === "zh") return q;
+  try { return localStorage.getItem("commerceLang") || "zh"; } catch (e) { return "zh"; } })();
+const EN = {
+  "Commerce 订单与配置": "Commerce Orders & Configuration", "总览": "Overview", "订单": "Orders", "配置分析": "Option Analysis", "变更记录": "Change Log",
+  "每月新车（按首张销售单月份，不含已全部取消的车）": "New vehicles per month (by first sales order, excl. fully cancelled)",
+  "12 个月": "12 mo", "24 个月": "24 mo", "全部": "All", "按州": "By state", "经销商排名": "Top dealers", "车型排名": "Top models",
+  "最近一次同步的变化": "Changes in the last sync", "全部 →": "All →",
+  "搜车架号 / 销售单 / 采购单 / ERP / 客户…": "Search chassis / SO / PO / ERP / customer…",
+  "全部经销商": "All dealers", "全部州": "All states", "全部车型": "All models",
+  "在用（未全部取消）": "Active (not fully cancelled)", "已全部取消": "Fully cancelled",
+  "经历过调拨": "Reallocated", "没有配置": "No configuration", "没有 floor plan": "No floor plan",
+  "首张销售单 从": "First sales order from", "首张销售单 到": "First sales order to", "清空": "Clear",
+  "导出 Excel": "Export Excel", "导出 Excel（含配置）": "Export Excel (with options)",
+  "每台车的完整 CPQ 配置、floor plan 和 spec sheet 链接（最多 500 台）": "Full CPQ options, floor plan and spec sheet links per vehicle (max 500 vehicles)",
+  "搜配置项…": "Search options…", "选择左边的配置项": "Pick an option on the left",
+  "加载中…": "Loading…", "读取失败": "Load failed", "读取失败：{e}": "Load failed: {e}",
+  "读不到数据：": "Cannot read data: ", "数据源：": "Source: ",
+  "如果 Firebase 还没有数据，运行一次同步（Render 的 commerce-sync → Trigger Run）；如果返回 401/403，是 Firebase 数据库规则不允许读取。":
+    "If Firebase has no data yet, run the sync once (Render commerce-sync → Trigger Run). A 401/403 means the Firebase database rules do not allow reading.",
+  "同步于 {t} · {n} 台": "Synced {t} · {n} vehicles", "{n} 台": "{n} vehicles",
+  "在用车辆": "Active vehicles", "共 {n} 台，含已取消": "{n} in total incl. cancelled", "本月新车": "New this month", "上月 {n}": "Last month {n}",
+  "{y} 年新车": "New in {y}", "按首张销售单": "By first sales order", "有 CPQ 配置": "With CPQ options", "{n} 台在用车辆": "of {n} active vehicles",
+  "上次同步变化": "Last sync", "新增 / 修改 · 消失 {n}": "new / changed · removed {n}",
+  "还没有变更记录": "No changes recorded yet", "还有 {n} 条…": "{n} more…", "没有变化": "No changes",
+  "车架号": "Chassis", "车型": "Model", "经销商": "Dealer", "州": "State", "客户": "Customer", "销售单": "Sales order", "状态": "Status",
+  "采购单": "Purchase order", "ERP 销售单": "ERP SO", "首张销售单": "First SO", "最后更新": "Updated", "销售单金额": "SO amount",
+  "配置 / 图 / Spec": "Options / Plan / Spec", "CPQ 配置": "CPQ options", "经历过调拨（标签）": "Realloc.",
+  "已取消": "Cancelled", "已完成": "Completed", "已创建": "Created",
+  "没有符合条件的车": "No vehicles match", "<b>{n}</b> 台 · 销售单合计 {m}": "<b>{n}</b> vehicles · SO total {m}",
+  "上一页": "Prev", "下一页": "Next",
+  "车型编码": "Product code", "下单账号": "Account", "销售单状态": "SO status", "采购单状态": "PO status", "单据类型": "Doc type",
+  "首张销售单经销商": "First SO dealer", "当前销售单时间": "Current SO date", "采购单金额": "PO amount", "经历调拨": "Reallocated",
+  "有配置": "Has options", "有 floor plan": "Has floor plan", "有 spec sheet": "Has spec sheet", "在用": "Active", "是": "Yes", "否": "No",
+  "搜索": "Search", "其他": "Other", "首张销售单从": "First SO from", "首张销售单到": "First SO to",
+  "Excel 组件加载失败，请检查网络": "Could not load the Excel component - check the network", "没有可导出的车": "Nothing to export",
+  "含配置的导出最多 500 台，当前筛选结果有 {n} 台。请先缩小筛选范围（例如选经销商、车型或日期）。":
+    "Export with options is limited to 500 vehicles; the current filter has {n}. Narrow it first (dealer, model or dates).",
+  "准备中…": "Preparing…", "读取配置 {d}/{n}": "Loading options {d}/{n}", "车辆": "Vehicles", "车辆和配置": "Vehicles & options",
+  "配置分组": "Option group", "配置项": "Option", "配置项分组": "Option groups", "导出时间": "Exported", "数据同步时间": "Data synced",
+  "车辆数": "Vehicles", "销售单金额合计": "SO total", "筛选条件": "Filters", "说明": "Info", "导出失败：": "Export failed: ",
+  "车辆配置": "VehicleOptions",
+  "这台车已不在数据中（可能在最近一次同步中消失）": "This vehicle is no longer in the data (it may have disappeared in the last sync)",
+  "销售单 / 采购单": "SO / PO", "订单记录": "Order history", "类型": "Type", "下单": "Placed", "账号": "Account", "金额": "Amount",
+  "筛选配置…": "Filter options…", "{n} 项": "{n} items", "SAP 没有返回这台车的配置": "SAP returned no configuration for this vehicle",
+  "没有匹配的配置项": "No matching options", "没有匹配": "No match", "全部车型 ({n})": "All models ({n})",
+  "{n} 台在用且有配置的车 · {k} 种取值": "{n} active vehicles with options · {k} values",
+  "各车型的选择（前 12 个车型）": "Choice by model (top 12 models)",
+  "订单号": "Order", "无数据": "No data", "新增": "New", "修改": "Changed", "消失": "Removed", "变化字段": "Changed fields",
+};
+const L = (zh, vars) => { let s = LANG === "en" ? (EN[zh] ?? zh) : zh; if (vars) for (const k in vars) s = s.split("{" + k + "}").join(vars[k]); return s; };
+function applyStatic() {
+  document.documentElement.lang = LANG === "en" ? "en" : "zh-CN";
+  document.title = L("Commerce 订单与配置");
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = L(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-ph]").forEach(el => el.placeholder = L(el.dataset.i18nPh));
+  document.querySelectorAll("[data-i18n-title]").forEach(el => el.title = L(el.dataset.i18nTitle));
+  document.querySelectorAll("#langSeg button").forEach(b => b.classList.toggle("on", b.dataset.l === LANG));
+}
 const ym = s => { const d = parseD(s); return d && !isNaN(d) ? d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") : null; };
 
 function url(path, query) {
@@ -247,22 +308,38 @@ const view = { sort: "firstPlaced", dir: -1, page: 0, filtered: [] };
 async function boot() {
   try {
     META = await get("meta");
-    if (!META) throw new Error("meta 为空");
+    if (!META) throw new Error("meta is empty");
     FIELDS = META.indexFields;
     const idx = await get("index");
     ROWS = Object.entries(idx || {}).map(([key, a]) => { const o = {key}; FIELDS.forEach((f, i) => o[f] = a[i] ?? null); o._fy = ym(o.firstPlaced); return o; });
   } catch (e) {
-    $("#sync").innerHTML = `<span class="dot err"></span>读取失败`;
-    showErr(`<b>读不到数据：</b>${esc(e.message)}<br>数据源：${esc(SRC === "local" ? SETTINGS.localBase : SETTINGS.firebaseURL + "/" + SETTINGS.root)}<br>
-      如果 Firebase 还没有数据，在 planning 电脑上把 commerce_sync_config.json 里的 firebase_enabled 改成 true 并运行一次 commerce_sync.py；
-      如果返回 401/403，是 Firebase 数据库规则不允许读取。`);
+    $("#sync").innerHTML = `<span class="dot err"></span>${L("读取失败")}`;
+    showErr(`<b>${L("读不到数据：")}</b>${esc(e.message)}<br>${L("数据源：")}${esc(SRC === "local" ? SETTINGS.localBase : SETTINGS.firebaseURL + "/" + SETTINGS.root)}<br>
+      ${L("如果 Firebase 还没有数据，运行一次同步（Render 的 commerce-sync → Trigger Run）；如果返回 401/403，是 Firebase 数据库规则不允许读取。")}`);
     return;
   }
-  const last = parseD(META.lastRun);
-  const hrs = (Date.now() - last) / 36e5;
-  $("#sync").innerHTML = `<span class="dot ${hrs > 30 ? "warn" : ""}"></span>同步于 ${fmtDT(META.lastRun)} · ${fmtN(META.vehicles)} 台`;
-  fillFilters(); renderOverview(); applyFilters();
+  fillFilters(); renderAll();
 }
+
+function renderSync() {
+  if (!META) return;
+  const hrs = (Date.now() - parseD(META.lastRun)) / 36e5;
+  $("#sync").innerHTML = `<span class="dot ${hrs > 30 ? "warn" : ""}"></span>${L("同步于 {t} · {n} 台", {t: fmtDT(META.lastRun), n: fmtN(META.vehicles)})}`;
+}
+let openKey = null;
+function renderAll() {
+  applyStatic(); renderSync();
+  if (!META) return;
+  buildHead(); renderOverview(); applyFilters();
+  if (STATS && curChar) selectChar(curChar);
+  if (RUNS && $("#v-changes").classList.contains("on")) loadChanges();
+  if (openKey && $("#drawer").classList.contains("on")) openVehicle(openKey);
+}
+$("#langSeg").onclick = e => {
+  const l = e.target.dataset.l; if (!l || l === LANG) return;
+  LANG = l; try { localStorage.setItem("commerceLang", l); } catch (err) {}
+  renderAll();
+};
 
 /* ---------------- tabs ---------------- */
 function go(v) {
@@ -279,12 +356,12 @@ let monthsN = 24, yearSel = String(new Date().getFullYear());
 function countBy(rows, f) { const m = new Map(); rows.forEach(r => { const k = f(r); if (k != null && k !== "") m.set(k, (m.get(k) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]); }
 function hlist(el, entries, onClick, max = 10) {
   const top = entries.slice(0, max), mx = top.length ? top[0][1] : 1;
-  el.innerHTML = top.length ? top.map(([k, n]) => `<div class="hrow" data-k="${esc(k)}"><span class="hn" title="${esc(k)}">${esc(k)}</span><span class="htrack"><b style="width:${(n / mx * 100).toFixed(1)}%"></b></span><span class="hv">${fmtN(n)}</span></div>`).join("") : `<div class="empty">无数据</div>`;
+  el.innerHTML = top.length ? top.map(([k, n]) => `<div class="hrow" data-k="${esc(k)}"><span class="hn" title="${esc(k)}">${esc(k)}</span><span class="htrack"><b style="width:${(n / mx * 100).toFixed(1)}%"></b></span><span class="hv">${fmtN(n)}</span></div>`).join("") : `<div class="empty">${L("无数据")}</div>`;
   if (onClick) el.onclick = e => { const r = e.target.closest(".hrow"); if (r) onClick(r.dataset.k); };
 }
 function yearSegs() {
   const years = [...new Set(ROWS.filter(r => r.active).map(r => (r._fy || "").slice(0, 4)).filter(Boolean))].sort().slice(-3);
-  const html = years.map(y => `<button data-y="${y}" class="${y === yearSel ? "on" : ""}">${y}</button>`).join("") + `<button data-y="" class="${yearSel === "" ? "on" : ""}">全部</button>`;
+  const html = years.map(y => `<button data-y="${y}" class="${y === yearSel ? "on" : ""}">${y}</button>`).join("") + `<button data-y="" class="${yearSel === "" ? "on" : ""}">${L("全部")}</button>`;
   document.querySelectorAll(".yearSeg, #stateYear").forEach(s => { s.innerHTML = html; s.onclick = e => { if (e.target.dataset.y != null) { yearSel = e.target.dataset.y; renderOverview(); } }; });
 }
 function renderOverview() {
@@ -297,11 +374,11 @@ function renderOverview() {
   const cfgPct = act.length ? act.filter(r => r.hasConfig).length / act.length * 100 : 0;
   const ch = META.changes || {};
   $("#kpis").innerHTML = [
-    ["在用车辆", fmtN(act.length), `共 ${fmtN(ROWS.length)} 台，含已取消`],
-    ["本月新车", fmtN(nThis), `上月 ${fmtN(nPrev)}`],
-    [`${y} 年新车`, fmtN(nYear), `按首张销售单`],
-    ["有 CPQ 配置", cfgPct.toFixed(0) + "%", `${fmtN(act.filter(r => r.hasConfig).length)} 台在用车辆`],
-    ["上次同步变化", `<span style="color:var(--emerald)">+${fmtN(ch.new || 0)}</span> <span style="color:var(--amber);font-size:20px">~${fmtN(ch.mod || 0)}</span>`, `新增 / 修改 · 消失 ${fmtN(ch.del || 0)}`],
+    [L("在用车辆"), fmtN(act.length), L("共 {n} 台，含已取消", {n: fmtN(ROWS.length)})],
+    [L("本月新车"), fmtN(nThis), L("上月 {n}", {n: fmtN(nPrev)})],
+    [L("{y} 年新车", {y}), fmtN(nYear), L("按首张销售单")],
+    [L("有 CPQ 配置"), cfgPct.toFixed(0) + "%", L("{n} 台在用车辆", {n: fmtN(act.filter(r => r.hasConfig).length)})],
+    [L("上次同步变化"), `<span style="color:var(--emerald)">+${fmtN(ch.new || 0)}</span> <span style="color:var(--amber);font-size:20px">~${fmtN(ch.mod || 0)}</span>`, L("新增 / 修改 · 消失 {n}", {n: fmtN(ch.del || 0)})],
   ].map(([l, v, s]) => `<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s}</div></div>`).join("");
 
   // months
@@ -313,7 +390,7 @@ function renderOverview() {
     months = monthsN ? all.slice(-monthsN) : all;
   }
   const mx = Math.max(1, ...months.map(m => byM.get(m) || 0));
-  $("#monthBars").innerHTML = months.map(m => { const n = byM.get(m) || 0; return `<div class="bar" title="${m}: ${n} 台" data-m="${m}"><em>${n || ""}</em><b style="height:${n / mx * 82}%"></b><span>${m.slice(2).replace("-", "/")}</span></div>`; }).join("");
+  $("#monthBars").innerHTML = months.map(m => { const n = byM.get(m) || 0; return `<div class="bar" title="${m}: ${L("{n} 台", {n})}" data-m="${m}"><em>${n || ""}</em><b style="height:${n / mx * 82}%"></b><span>${m.slice(2).replace("-", "/")}</span></div>`; }).join("");
   $("#monthBars").onclick = e => { const b = e.target.closest(".bar"); if (b) { const [Y, M] = b.dataset.m.split("-"); const last = new Date(+Y, +M, 0).getDate(); setFilters({from: `${b.dataset.m}-01`, to: `${b.dataset.m}-${last}`}); } };
 
   yearSegs();
@@ -332,13 +409,13 @@ async function renderLastChanges() {
   try {
     const runs = await loadRuns();
     const ids = Object.keys(runs).sort().reverse();
-    if (!ids.length) { el.innerHTML = `<div class="empty">还没有变更记录</div>`; return; }
+    if (!ids.length) { el.innerHTML = `<div class="empty">${L("还没有变更记录")}</div>`; return; }
     const items = Object.entries(runs[ids[0]] || {}).filter(([k, c]) => c.t !== "none").sort((a, b) => ORDER[a[1].t] - ORDER[b[1].t]);
     el.innerHTML = `<div style="color:var(--muted);margin-bottom:6px">${esc(ids[0].replace("_", " "))}</div>` + (items.length ?
       `<div class="hlist">${items.slice(0, 12).map(([k, c]) => `<div class="hrow" style="grid-template-columns:52px minmax(0,1fr) auto" data-k="${esc(k)}">${badge(c.t)}<span class="hn"><span class="mono">${esc(c.c || k)}</span> · ${esc(c.m || "")}</span><span style="color:var(--muted);font-size:11px" class="hn">${esc((c.f || []).slice(0, 3).join(", "))}</span></div>`).join("")}</div>` +
-      (items.length > 12 ? `<div style="color:var(--muted);margin-top:6px">还有 ${items.length - 12} 条…</div>` : "") : `<div class="empty">没有变化</div>`);
+      (items.length > 12 ? `<div style="color:var(--muted);margin-top:6px">${L("还有 {n} 条…", {n: items.length - 12})}</div>` : "") : `<div class="empty">${L("没有变化")}</div>`);
     el.querySelector(".hlist") && (el.querySelector(".hlist").onclick = e => { const r = e.target.closest(".hrow"); if (r) openVehicle(r.dataset.k); });
-  } catch (e) { el.innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; }
+  } catch (e) { el.innerHTML = `<div class="empty">${L("读取失败：{e}", {e: esc(e.message)})}</div>`; }
 }
 
 /* ---------------- orders table ---------------- */
@@ -355,20 +432,24 @@ const COLS = [
   ["firstPlaced", "首张销售单", r => fmtD(r.firstPlaced)],
   ["updated", "最后更新", r => fmtD(r.updated)],
   ["soTotal", "销售单金额", r => fmtM(r.soTotal), "num"],
-  ["hasConfig", "配置 / 图 / Spec", r => `<span class="flags"><span class="${r.hasConfig ? "y" : ""}" title="CPQ 配置">C</span><span class="${r.hasFloorPlan ? "y" : ""}" title="floor plan">F</span><span class="${r.hasSpecSheet ? "y" : ""}" title="spec sheet">S</span></span>${r.realloc ? ' <span class="pill p-am" title="经历过调拨">调拨</span>' : ""}`],
+  ["hasConfig", "配置 / 图 / Spec", r => `<span class="flags"><span class="${r.hasConfig ? "y" : ""}" title="${L("CPQ 配置")}">C</span><span class="${r.hasFloorPlan ? "y" : ""}" title="floor plan">F</span><span class="${r.hasSpecSheet ? "y" : ""}" title="spec sheet">S</span></span>${r.realloc ? ` <span class="pill p-am" title="${L("经历过调拨")}">${LANG === "en" ? "Realloc." : "调拨"}</span>` : ""}`],
 ];
 function statusPill(r) {
-  if (!r.active) return `<span class="pill p-cx">已取消</span>`;
+  if (!r.active) return `<span class="pill p-cx">${L("已取消")}</span>`;
   const s = r.soStatus || r.poStatus || "";
-  return s === "COMPLETED" ? `<span class="pill p-in">已完成</span>` : `<span class="pill p-ok">${s === "CREATED" ? "已创建" : esc(s)}</span>`;
+  return s === "COMPLETED" ? `<span class="pill p-in">${L("已完成")}</span>` : `<span class="pill p-ok">${s === "CREATED" ? L("已创建") : esc(s)}</span>`;
 }
 function fillFilters() {
   const opts = (sel, vals) => { const el = $(sel); vals.forEach(([v, n]) => el.insertAdjacentHTML("beforeend", `<option value="${esc(v)}">${esc(v)} (${fmtN(n)})</option>`)); };
   opts("#fDealer", countBy(ROWS, r => r.dealer).sort((a, b) => a[0].localeCompare(b[0])));
   opts("#fState", countBy(ROWS, r => r.state));
   opts("#fModel", countBy(ROWS, r => r.model || r.productCode).sort((a, b) => a[0].localeCompare(b[0])));
-  $("#tbl thead").innerHTML = "<tr>" + COLS.map(([k, l, , c]) => `<th data-k="${k}" class="${c === "num" ? "num" : ""}">${l}<span class="ar"></span></th>`).join("") + "</tr>";
+  buildHead();
   $("#tbl thead").onclick = e => { const th = e.target.closest("th"); if (!th) return; const k = th.dataset.k; view.dir = view.sort === k ? -view.dir : (k === "firstPlaced" || k === "updated" || k === "soTotal" ? -1 : 1); view.sort = k; view.page = 0; applyFilters(); };
+}
+function buildHead() {
+  $("#tbl thead").innerHTML = "<tr>" + COLS.map(([k, l, , c]) => `<th data-k="${k}" class="${c === "num" ? "num" : ""}">${L(l)}<span class="ar"></span></th>`).join("") + "</tr>";
+  document.querySelectorAll("#tbl th").forEach(th => th.querySelector(".ar").textContent = th.dataset.k === view.sort ? (view.dir > 0 ? "↑" : "↓") : "");
 }
 let qTimer;
 $("#q").oninput = () => { clearTimeout(qTimer); qTimer = setTimeout(() => { view.page = 0; applyFilters(); }, 150); };
@@ -406,15 +487,15 @@ function renderTable() {
   const rows = view.filtered, ps = SETTINGS.pageSize, pages = Math.max(1, Math.ceil(rows.length / ps));
   view.page = Math.min(view.page, pages - 1);
   const slice = rows.slice(view.page * ps, view.page * ps + ps);
-  $("#tbl tbody").innerHTML = slice.length ? slice.map(r => `<tr data-k="${esc(r.key)}">${COLS.map(([k, , f, c]) => `<td class="${c || ""}">${f(r)}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${COLS.length}" class="empty">没有符合条件的车</td></tr>`;
+  $("#tbl tbody").innerHTML = slice.length ? slice.map(r => `<tr data-k="${esc(r.key)}">${COLS.map(([k, , f, c]) => `<td class="${c || ""}">${f(r)}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${COLS.length}" class="empty">${L("没有符合条件的车")}</td></tr>`;
   const amt = rows.reduce((s, r) => s + (r.soTotal || 0), 0);
-  $("#count").innerHTML = `<b>${fmtN(rows.length)}</b> 台 · 销售单合计 ${fmtM(amt)}`;
-  $("#pager").innerHTML = pages > 1 ? `<button class="btn" ${view.page ? "" : "disabled"} data-p="${view.page - 1}">上一页</button><span>${view.page + 1} / ${pages}</span><button class="btn" ${view.page < pages - 1 ? "" : "disabled"} data-p="${view.page + 1}">下一页</button>` : "";
+  $("#count").innerHTML = L("<b>{n}</b> 台 · 销售单合计 {m}", {n: fmtN(rows.length), m: fmtM(amt)});
+  $("#pager").innerHTML = pages > 1 ? `<button class="btn" ${view.page ? "" : "disabled"} data-p="${view.page - 1}">${L("上一页")}</button><span>${view.page + 1} / ${pages}</span><button class="btn" ${view.page < pages - 1 ? "" : "disabled"} data-p="${view.page + 1}">${L("下一页")}</button>` : "";
 }
 $("#pager").onclick = e => { if (e.target.dataset.p != null) { view.page = +e.target.dataset.p; renderTable(); $(".tbl-wrap").scrollTop = 0; } };
 $("#tbl tbody").onclick = e => { const tr = e.target.closest("tr[data-k]"); if (tr) openVehicle(tr.dataset.k); };
 $("#csv").onclick = () => {
-  const H = ["车架号", "车型", "车型编码", "经销商", "州", "客户", "下单账号", "销售单", "销售单状态", "采购单", "采购单状态", "ERP销售单", "单据类型", "首张销售单", "首张销售单经销商", "当前销售单时间", "最后更新", "销售单金额", "采购单金额", "调拨", "有配置", "有floor plan", "有spec sheet"];
+  const H = ["车架号", "车型", "车型编码", "经销商", "州", "客户", "下单账号", "销售单", "销售单状态", "采购单", "采购单状态", "ERP 销售单", "单据类型", "首张销售单", "首张销售单经销商", "当前销售单时间", "最后更新", "销售单金额", "采购单金额", "经历调拨", "有配置", "有 floor plan", "有 spec sheet"].map(h => L(h));
   const F = ["chassis", "model", "productCode", "dealer", "state", "customer", "acct", "so", "soStatus", "po", "poStatus", "erp", "docType", "firstPlaced", "firstDealer", "placed", "updated", "soTotal", "poTotal", "realloc", "hasConfig", "hasFloorPlan", "hasSpecSheet"];
   const cell = v => { v = v == null ? "" : String(v); if (/^[=+\-@]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
   const csv = "﻿" + [H.join(","), ...view.filtered.map(r => F.map(f => cell(f.endsWith("laced") || f === "updated" ? fmtDT(r[f]) : r[f])).join(","))].join("\r\n");
@@ -428,7 +509,7 @@ function loadXlsx() {
   if (window.XLSX) return Promise.resolve(window.XLSX);
   if (!xlsxLib) xlsxLib = new Promise((ok, bad) => {
     const sc = document.createElement("script"); sc.src = XLSX_URL;
-    sc.onload = () => ok(window.XLSX); sc.onerror = () => { xlsxLib = null; bad(new Error("Excel 组件加载失败，请检查网络")); };
+    sc.onload = () => ok(window.XLSX); sc.onerror = () => { xlsxLib = null; bad(new Error(L("Excel 组件加载失败，请检查网络"))); };
     document.head.appendChild(sc);
   });
   return xlsxLib;
@@ -438,17 +519,17 @@ const LIST_COLS = [
   ["车架号", r => r.chassis, 12], ["车型", r => r.model, 14], ["车型编码", r => r.productCode, 11],
   ["经销商", r => r.dealer, 30], ["州", r => r.state, 6], ["客户", r => r.customer, 26], ["下单账号", r => r.acct, 30],
   ["销售单", r => r.so, 10], ["销售单状态", r => r.soStatus, 11], ["采购单", r => r.po, 10], ["采购单状态", r => r.poStatus, 11],
-  ["在用", r => r.active ? "是" : "否", 6], ["ERP 销售单", r => r.erp, 12], ["单据类型", r => r.docType, 8],
+  ["在用", r => r.active ? L("是") : L("否"), 6], ["ERP 销售单", r => r.erp, 12], ["单据类型", r => r.docType, 8],
   ["首张销售单", r => toDate(r.firstPlaced), 17], ["首张销售单经销商", r => r.firstDealer, 26], ["当前销售单时间", r => toDate(r.placed), 17],
   ["最后更新", r => toDate(r.updated), 17], ["销售单金额", r => r.soTotal, 13], ["采购单金额", r => r.poTotal, 13],
-  ["经历调拨", r => r.realloc ? "是" : "", 8], ["有配置", r => r.hasConfig ? "是" : "", 7],
-  ["有 floor plan", r => r.hasFloorPlan ? "是" : "", 9], ["有 spec sheet", r => r.hasSpecSheet ? "是" : "", 9],
+  ["经历调拨", r => r.realloc ? L("是") : "", 8], ["有配置", r => r.hasConfig ? L("是") : "", 7],
+  ["有 floor plan", r => r.hasFloorPlan ? L("是") : "", 9], ["有 spec sheet", r => r.hasSpecSheet ? L("是") : "", 9],
 ];
 function filterSummary() {
   const f = [["搜索", $("#q").value], ["经销商", $("#fDealer").value], ["州", $("#fState").value], ["车型", $("#fModel").value],
     ["状态", $("#fStatus").selectedOptions[0].text], ["其他", $("#fFlag").value ? $("#fFlag").selectedOptions[0].text : ""],
     ["首张销售单从", $("#fFrom").value], ["首张销售单到", $("#fTo").value]];
-  return f.filter(([, v]) => v);
+  return f.filter(([, v]) => v).map(([k, v]) => [L(k), v]);
 }
 function sheetFrom(X, header, rows, widths, dateCols, moneyCols) {
   const ws = X.utils.aoa_to_sheet([header, ...rows], {cellDates: true});
@@ -463,17 +544,17 @@ function sheetFrom(X, header, rows, widths, dateCols, moneyCols) {
 }
 async function exportExcel(withCfg) {
   const rows = view.filtered;
-  if (!rows.length) { alert("没有可导出的车"); return; }
-  if (withCfg && rows.length > 500) { alert(`含配置的导出最多 500 台，当前筛选结果有 ${rows.length} 台。请先缩小筛选范围（例如选经销商、车型或日期）。`); return; }
+  if (!rows.length) { alert(L("没有可导出的车")); return; }
+  if (withCfg && rows.length > 500) { alert(L("含配置的导出最多 500 台，当前筛选结果有 {n} 台。请先缩小筛选范围（例如选经销商、车型或日期）。", {n: rows.length})); return; }
   const btn = withCfg ? $("#xlsxCfg") : $("#xlsx"), label = btn.textContent;
-  btn.disabled = true; btn.textContent = "准备中…";
+  btn.disabled = true; btn.textContent = L("准备中…");
   try {
     const X = await loadXlsx();
     const wb = X.utils.book_new();
     const idxOf = names => names.map(n => LIST_COLS.findIndex(c => c[0] === n));
     const dateIdx = idxOf(["首张销售单", "当前销售单时间", "最后更新"]), moneyIdx = idxOf(["销售单金额", "采购单金额"]);
     if (!withCfg) {
-      X.utils.book_append_sheet(wb, sheetFrom(X, LIST_COLS.map(c => c[0]), rows.map(r => LIST_COLS.map(c => c[1](r) ?? null)), LIST_COLS.map(c => c[2]), dateIdx, moneyIdx), "车辆");
+      X.utils.book_append_sheet(wb, sheetFrom(X, LIST_COLS.map(c => L(c[0])), rows.map(r => LIST_COLS.map(c => c[1](r) ?? null)), LIST_COLS.map(c => c[2]), dateIdx, moneyIdx), L("车辆"));
     } else {
       // fetch details + configuration for each vehicle, 8 at a time
       const out = new Array(rows.length); let done = 0, i = 0;
@@ -482,7 +563,7 @@ async function exportExcel(withCfg) {
           const k = i++, r = rows[k];
           const [v, cfg] = await Promise.all([get("vehicles/" + r.key).catch(() => null), r.hasConfig ? get("config/" + r.key).catch(() => null) : null]);
           out[k] = {r, v, cfg}; done++;
-          if (done % 10 === 0) btn.textContent = `读取配置 ${done}/${rows.length}`;
+          if (done % 10 === 0) btn.textContent = L("读取配置 {d}/{n}", {d: done, n: rows.length});
         }
       };
       await Promise.all(Array.from({length: 8}, worker));
@@ -490,7 +571,7 @@ async function exportExcel(withCfg) {
       const cols = new Map();  // option -> group, in first-seen order
       out.forEach(o => groupsOf(o.cfg).forEach(([g, cs]) => cs.forEach(([c]) => { if (!cols.has(c)) cols.set(c, g); })));
       const opts = [...cols.keys()];
-      const H = [...LIST_COLS.map(c => c[0]), "Floor plan", "Spec sheet", ...opts];
+      const H = [...LIST_COLS.map(c => L(c[0])), "Floor plan", "Spec sheet", ...opts];
       const body = out.map(({r, v, cfg}) => {
         const m = new Map(); groupsOf(cfg).forEach(([, cs]) => cs.forEach(([c, val]) => m.set(c, val)));
         return [...LIST_COLS.map(c => c[1](r) ?? null), v && v.floorPlan || null, v && v.specSheet || null, ...opts.map(o => m.get(o) ?? null)];
@@ -503,15 +584,15 @@ async function exportExcel(withCfg) {
           if (cell && cell.v) { cell.l = {Target: cell.v}; cell.v = j ? "spec sheet" : "floor plan"; }
         }
       });
-      X.utils.book_append_sheet(wb, ws, "车辆和配置");
-      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([["配置分组", "配置项"], ...opts.map(o => [cols.get(o), o])]), "配置项分组");
+      X.utils.book_append_sheet(wb, ws, L("车辆和配置"));
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet([[L("配置分组"), L("配置项")], ...opts.map(o => [cols.get(o), o])]), L("配置项分组"));
     }
-    const info = [["导出时间", new Date().toLocaleString("en-AU")], ["数据同步时间", fmtDT(META.lastRun)], ["车辆数", rows.length],
-      ["销售单金额合计", Math.round(rows.reduce((s, r) => s + (r.soTotal || 0), 0) * 100) / 100], [], ["筛选条件", ""], ...filterSummary()];
-    X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(info), "说明");
+    const info = [[L("导出时间"), new Date().toLocaleString("en-AU")], [L("数据同步时间"), fmtDT(META.lastRun)], [L("车辆数"), rows.length],
+      [L("销售单金额合计"), Math.round(rows.reduce((s, r) => s + (r.soTotal || 0), 0) * 100) / 100], [], [L("筛选条件"), ""], ...filterSummary()];
+    X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(info), L("说明"));
     const tag = [$("#fDealer").value, $("#fModel").value].filter(Boolean).join("_").replace(/[\\/:*?"<>|\s]+/g, "-").slice(0, 40);
-    X.writeFile(wb, `车辆${withCfg ? "配置" : ""}_${tag ? tag + "_" : ""}${new Date().toLocaleDateString("en-CA")}.xlsx`, {compression: true});
-  } catch (e) { alert("导出失败：" + e.message); }
+    X.writeFile(wb, `${L(withCfg ? "车辆配置" : "车辆")}_${tag ? tag + "_" : ""}${new Date().toLocaleDateString("en-CA")}.xlsx`, {compression: true});
+  } catch (e) { alert(L("导出失败：") + e.message); }
   finally { btn.disabled = false; btn.textContent = label; }
 }
 $("#xlsx").onclick = () => exportExcel(false);
@@ -522,35 +603,36 @@ function closeDrawer() { $("#drawer").classList.remove("on"); $("#shade").classL
 $("#shade").onclick = closeDrawer;
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
 async function openVehicle(key) {
+  openKey = key;
   const r = ROWS.find(x => x.key === key);
   $("#drawer").classList.add("on"); $("#shade").classList.add("on");
   $("#dh").innerHTML = `<div><h2>${esc(r ? r.chassis || key : key)}</h2><div class="sub">${r ? esc([r.model || r.productCode, r.dealer, r.customer].filter(Boolean).join(" · ")) : ""}</div></div><button class="dx" onclick="closeDrawer()">×</button>`;
-  $("#db").innerHTML = `<div class="loading">加载中…</div>`;
+  $("#db").innerHTML = `<div class="loading">${L("加载中…")}</div>`;
   let v, cfg;
   try { [v, cfg] = await Promise.all([get("vehicles/" + key), get("config/" + key).catch(() => null)]); }
-  catch (e) { $("#db").innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; return; }
-  if (!v) { $("#db").innerHTML = `<div class="empty">这台车已不在数据中（可能在最近一次同步中消失）</div>`; return; }
+  catch (e) { $("#db").innerHTML = `<div class="empty">${L("读取失败：{e}", {e: esc(e.message)})}</div>`; return; }
+  if (!v) { $("#db").innerHTML = `<div class="empty">${L("这台车已不在数据中（可能在最近一次同步中消失）")}</div>`; return; }
   const kv = [["状态", r ? statusPill(r) : ""], ["销售单 / 采购单", `${esc(v.so || "—")} / ${esc(v.po || "—")}`], ["ERP 销售单", esc(v.erp || "—")],
     ["经销商", esc(v.dealer)], ["州", esc(v.state || "—")], ["客户", esc(v.customer || "—")],
     ["首张销售单", fmtDT(v.firstPlaced) + (v.firstDealer && v.firstDealer !== v.dealer ? ` · ${esc(v.firstDealer)}` : "")], ["最后更新", fmtDT(v.updated)], ["车型编码", esc((cfg && cfg.productCode) || "—")],
-    ["销售单金额", fmtM(v.soTotal) || "—"], ["采购单金额", fmtM(v.poTotal) || "—"], ["单据类型", esc(v.docType || "—")]];
+    ["销售单金额", fmtM(v.soTotal) || "—"], ["采购单金额", fmtM(v.poTotal) || "—"], ["单据类型", esc(v.docType || "—")]].map(([l, x]) => [L(l), x]);
   // config groups: [{g, c:[[option, value], ...]}] (Firebase-safe) or the older {group: {option: value}}
   const GROUPS = cfg && cfg.groups ? (Array.isArray(cfg.groups) ? cfg.groups.map(x => [x.g, x.c || []]) : Object.entries(cfg.groups).map(([g, o]) => [g, Object.entries(o)])) : null;
   const cfgFrom = (v.orders || []).find(o => o.type === "SO" && o.status !== "CANCELLED") || (v.orders || [])[0];
   let html = `<div class="kv">${kv.map(([l, x]) => `<div><label>${l}</label><span>${x}</span></div>`).join("")}</div>
     <div class="links"><a class="${v.floorPlan ? "" : "off"}" href="${esc(v.floorPlan || "#")}" target="_blank" rel="noopener">Floor plan ↗</a>
     <a class="${v.specSheet ? "" : "off"}" href="${esc(v.specSheet || "#")}" target="_blank" rel="noopener">Spec sheet ↗</a></div>
-    <div class="sec">订单记录 <span class="pill p-gr">${(v.orders || []).length}</span></div>
-    <div class="tbl-wrap"><table><thead><tr><th>订单</th><th>类型</th><th>状态</th><th>下单</th><th>账号</th><th>经销商</th><th class="num">金额</th><th>ERP</th></tr></thead><tbody>
-    ${(v.orders || []).slice().reverse().map(o => `<tr style="cursor:default"><td class="mono">${esc(o.code)}</td><td>${o.type === "SO" ? '<span class="pill p-in">销售单</span>' : o.type === "PO" ? '<span class="pill p-gr">采购单</span>' : esc(o.type)}</td>
-      <td>${o.status === "CANCELLED" ? '<span class="pill p-cx">已取消</span>' : o.status === "COMPLETED" ? '<span class="pill p-in">已完成</span>' : '<span class="pill p-ok">已创建</span>'}</td>
+    <div class="sec">${L("订单记录")} <span class="pill p-gr">${(v.orders || []).length}</span></div>
+    <div class="tbl-wrap"><table><thead><tr><th>${L("订单号")}</th><th>${L("类型")}</th><th>${L("状态")}</th><th>${L("下单")}</th><th>${L("账号")}</th><th>${L("经销商")}</th><th class="num">${L("金额")}</th><th>ERP</th></tr></thead><tbody>
+    ${(v.orders || []).slice().reverse().map(o => `<tr style="cursor:default"><td class="mono">${esc(o.code)}</td><td>${o.type === "SO" ? `<span class="pill p-in">${L("销售单")}</span>` : o.type === "PO" ? `<span class="pill p-gr">${L("采购单")}</span>` : esc(o.type)}</td>
+      <td>${o.status === "CANCELLED" ? `<span class="pill p-cx">${L("已取消")}</span>` : o.status === "COMPLETED" ? `<span class="pill p-in">${L("已完成")}</span>` : `<span class="pill p-ok">${L("已创建")}</span>`}</td>
       <td>${fmtDT(o.placed)}</td><td class="ell" title="${esc(o.acct)}">${esc(o.acct)}</td><td class="ell" title="${esc(o.dealer)}">${esc(o.dealer || "")}</td><td class="num">${fmtM(o.total)}</td><td class="mono">${esc(o.erp || "")}</td></tr>`).join("")}
     </tbody></table></div>`;
   if (GROUPS) {
     const n = GROUPS.reduce((s, [, c]) => s + c.length, 0);
-    html += `<div class="sec">CPQ 配置 <span class="pill p-gr">${n} 项</span><input class="in" id="cfgq" placeholder="筛选配置…" style="margin-left:auto;height:28px;width:200px"></div><div id="cfgbox"></div>`;
+    html += `<div class="sec">${L("CPQ 配置")} <span class="pill p-gr">${L("{n} 项", {n})}</span><input class="in" id="cfgq" placeholder="${L("筛选配置…")}" style="margin-left:auto;height:28px;width:200px"></div><div id="cfgbox"></div>`;
   } else {
-    html += `<div class="sec">CPQ 配置</div><div class="empty">SAP 没有返回这台车的配置</div>`;
+    html += `<div class="sec">${L("CPQ 配置")}</div><div class="empty">${L("SAP 没有返回这台车的配置")}</div>`;
   }
   $("#db").innerHTML = html;
   if (GROUPS) {
@@ -560,7 +642,7 @@ async function openVehicle(key) {
       $("#cfgbox").innerHTML = GROUPS.map(([g, chars]) => {
         const items = chars.filter(([c, val]) => !q || (c + " " + val).toLowerCase().includes(q));
         return items.length ? `<details class="cfg-g" open><summary><span>${esc(g)}</span><span style="color:var(--muted);font-weight:400">${items.length}</span></summary><table><tbody>${items.map(([c, val]) => `<tr style="cursor:default"><td>${hl(c)}</td><td>${hl(val)}</td></tr>`).join("")}</tbody></table></details>` : "";
-      }).join("") || `<div class="empty">没有匹配的配置项</div>`;
+      }).join("") || `<div class="empty">${L("没有匹配的配置项")}</div>`;
     };
     draw(""); $("#cfgq").oninput = e => draw(e.target.value);
   }
@@ -570,7 +652,7 @@ async function openVehicle(key) {
 let STATS = null, curChar = null, curModel = "";
 async function loadCfgStats() {
   if (STATS) return;
-  try { STATS = await get("configStats"); } catch (e) { $("#clist").innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; return; }
+  try { STATS = await get("configStats"); } catch (e) { $("#clist").innerHTML = `<div class="empty">${L("读取失败：{e}", {e: esc(e.message)})}</div>`; return; }
   drawCharList(""); $("#cq").oninput = e => drawCharList(e.target.value);
   if (STATS.chars && STATS.chars.length) selectChar(STATS.chars.find(c => /colour/i.test(c.c)) ? STATS.chars.find(c => /colour/i.test(c.c)).c : STATS.chars[0].c);
 }
@@ -580,7 +662,7 @@ function drawCharList(q) {
     if (c.g !== g) { g = c.g; html += `<div class="cgrp">${esc(g)}</div>`; }
     html += `<div class="citem ${c.c === curChar ? "on" : ""}" data-c="${esc(c.c)}"><span>${esc(c.c)}</span><small>${fmtN(c.n)}</small></div>`;
   });
-  $("#clist").innerHTML = html || `<div class="empty">没有匹配</div>`;
+  $("#clist").innerHTML = html || `<div class="empty">${L("没有匹配")}</div>`;
   $("#clist").onclick = e => { const it = e.target.closest(".citem"); if (it) selectChar(it.dataset.c); };
 }
 function selectChar(c) {
@@ -590,17 +672,17 @@ function selectChar(c) {
   const tot = vals.reduce((s, v) => s + v.n, 0), mx = vals.length ? vals[0].n : 1;
   const models = STATS.models.filter(([m]) => ch.v.some(v => v.m.some(x => x[0] === m)));
   $("#cpanel").innerHTML = `<h3 style="font-size:15px;color:var(--text)"><span>${esc(c)} <span style="color:var(--muted);font-weight:400;font-size:12px">· ${esc(ch.g)}</span></span>
-    <select class="in" id="cm"><option value="">全部车型 (${fmtN(STATS.vehicles)})</option>${models.map(([m, n]) => `<option value="${esc(m)}" ${m === curModel ? "selected" : ""}>${esc(m)} (${fmtN(n)})</option>`).join("")}</select></h3>
-    <div style="color:var(--muted);margin-bottom:8px">${fmtN(tot)} 台在用且有配置的车 · ${vals.length} 种取值</div>
+    <select class="in" id="cm"><option value="">${L("全部车型 ({n})", {n: fmtN(STATS.vehicles)})}</option>${models.map(([m, n]) => `<option value="${esc(m)}" ${m === curModel ? "selected" : ""}>${esc(m)} (${fmtN(n)})</option>`).join("")}</select></h3>
+    <div style="color:var(--muted);margin-bottom:8px">${L("{n} 台在用且有配置的车 · {k} 种取值", {n: fmtN(tot), k: vals.length})}</div>
     ${vals.map(v => `<div class="vrow"><span title="${esc(v.v)}" class="hn">${esc(v.v)}</span><span class="htrack"><b style="width:${(v.n / mx * 100).toFixed(1)}%"></b></span><span class="hv">${fmtN(v.n)}</span><span style="color:var(--muted);text-align:right">${(v.n / tot * 100).toFixed(1)}%</span></div>`).join("")}
-    ${!curModel ? `<div class="sec" style="margin-top:22px">各车型的选择（前 12 个车型）</div>${modelMatrix(ch)}` : ""}`;
+    ${!curModel ? `<div class="sec" style="margin-top:22px">${L("各车型的选择（前 12 个车型）")}</div>${modelMatrix(ch)}` : ""}`;
   $("#cm").onchange = e => { curModel = e.target.value; selectChar(c); };
 }
 function modelMatrix(ch) {
   const mods = STATS.models.filter(([m]) => ch.v.some(v => v.m.some(x => x[0] === m))).slice(0, 12).map(x => x[0]);
   const vals = ch.v.slice(0, 8);
   const cellN = (v, m) => (v.m.find(x => x[0] === m) || [0, 0])[1];
-  return `<div class="tbl-wrap"><table><thead><tr><th>车型</th>${vals.map(v => `<th class="num" title="${esc(v.v)}">${esc(String(v.v).slice(0, 18))}</th>`).join("")}</tr></thead><tbody>
+  return `<div class="tbl-wrap"><table><thead><tr><th>${L("车型")}</th>${vals.map(v => `<th class="num" title="${esc(v.v)}">${esc(String(v.v).slice(0, 18))}</th>`).join("")}</tr></thead><tbody>
     ${mods.map(m => { const tot = ch.v.reduce((s, v) => s + cellN(v, m), 0); return `<tr style="cursor:default"><td>${esc(m)}</td>${vals.map(v => { const n = cellN(v, m), p = tot ? n / tot : 0; return `<td class="num" style="background:rgba(79,70,229,${(p * .35).toFixed(3)})">${n ? (p * 100).toFixed(0) + "%" : ""}</td>`; }).join("")}</tr>`; }).join("")}
     </tbody></table></div>`;
 }
@@ -612,25 +694,26 @@ async function loadRuns() {
   return RUNS;
 }
 const ORDER = {new: 0, mod: 1, del: 2};
-const badge = t => ({new: '<span class="pill p-ok">新增</span>', mod: '<span class="pill p-am">修改</span>', del: '<span class="pill p-cx">消失</span>'}[t] || "");
+const badge = t => ({new: `<span class="pill p-ok">${L("新增")}</span>`, mod: `<span class="pill p-am">${L("修改")}</span>`, del: `<span class="pill p-cx">${L("消失")}</span>`}[t] || "");
 async function loadChanges() {
   const el = $("#runs");
   try {
     const runs = await loadRuns(); const ids = Object.keys(runs).sort().reverse();
-    if (!ids.length) { el.innerHTML = `<div class="empty">还没有变更记录</div>`; return; }
+    if (!ids.length) { el.innerHTML = `<div class="empty">${L("还没有变更记录")}</div>`; return; }
     el.innerHTML = ids.map((id, i) => {
       const items = Object.entries(runs[id] || {}).filter(([, c]) => c.t !== "none");
       const n = t => items.filter(([, c]) => c.t === t).length;
       return `<details class="card run" style="padding:0" ${i === 0 ? "open" : ""}><summary><b>${esc(id.replace("_", " "))}</b>
         <span class="pill p-ok">+${n("new")}</span><span class="pill p-am">~${n("mod")}</span><span class="pill p-cx">−${n("del")}</span></summary>
-        ${items.length ? `<div style="max-height:calc(100vh - 220px);overflow:auto"><table><thead><tr><th>类型</th><th>车架号</th><th>销售单</th><th>车型</th><th>经销商</th><th>变化字段</th></tr></thead><tbody>
+        ${items.length ? `<div style="max-height:calc(100vh - 220px);overflow:auto"><table><thead><tr><th>${L("类型")}</th><th>${L("车架号")}</th><th>${L("销售单")}</th><th>${L("车型")}</th><th>${L("经销商")}</th><th>${L("变化字段")}</th></tr></thead><tbody>
         ${items.sort((a, b) => ORDER[a[1].t] - ORDER[b[1].t]).map(([k, c]) => `<tr data-k="${esc(k)}"><td>${badge(c.t)}</td><td class="mono">${esc(c.c || k)}</td><td class="mono">${esc(c.so || "")}</td><td>${esc(c.m || "")}</td><td>${esc(c.d || "")}</td><td style="white-space:normal;color:var(--muted)">${esc((c.f || []).join(", "))}</td></tr>`).join("")}
-        </tbody></table></div>` : `<div class="empty">没有变化</div>`}</details>`;
+        </tbody></table></div>` : `<div class="empty">${L("没有变化")}</div>`}</details>`;
     }).join("");
     el.onclick = e => { const tr = e.target.closest("tr[data-k]"); if (tr) openVehicle(tr.dataset.k); };
-  } catch (e) { el.innerHTML = `<div class="empty">读取失败：${esc(e.message)}</div>`; }
+  } catch (e) { el.innerHTML = `<div class="empty">${L("读取失败：{e}", {e: esc(e.message)})}</div>`; }
 }
 
+applyStatic();
 boot().then(() => { const h = location.hash.slice(1); if (["orders", "cfg", "changes"].includes(h)) go(h); });
 </script>
 </body>
